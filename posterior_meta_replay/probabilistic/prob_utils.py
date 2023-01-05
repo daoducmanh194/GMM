@@ -424,7 +424,71 @@ def extract_mean_std(hnet_outputs, return_logvar=False):
         return mean, std, logvar
     return mean, std
 
+def sample_gumbel_softmax(x, tau=1.0):
+    r"""Sample a Gaussian sample following Gumbel Sample method.
+
+    Args:
+        x: point needed to estimate sample
+        tau: hyperparameter setup for gumbel sampling
+
+    Returns:
+        A soft prediction after using Gumbel Sample method.
+    """
+    eps = 1e-20
+    uniform_sample = torch.distributions.Uniform(0, 1).sample(x.shape)
+    gumbel_sample = -torch.log(-torch.log(uniform_sample + eps) + eps)
+    gumbel_softmax = F.softmax(1.0 / tau * (torch.log(F.softmax(x, dim=0)) + gumbel_sample), dim=0)
+    return gumbel_softmax
+
+def compute_kl(mean, exp_var, prior_mean, prior_exp_var, sum=True, lamb=1, initial_prior_var=0.0):
+    r"""Compute KL distance between 2 distributions
+
+    Args:
+        mean:
+        exp_var:
+        prior_mean:
+        prior_exp_var:
+        sum (bool): compute sum of result or not
+        lamb: hyperparameter for computing KL distance
+        initial_prior_var:
+
+    Returns:
+        KL distance between 2 distributions
+    """
+    trace_term = torch.exp(exp_var - prior_exp_var)
+    if lamb != 1:
+        mean_term = (mean - prior_mean) ** 2 * (
+                    lamb * torch.clamp(torch.exp(-prior_exp_var) - (1.0 / np.exp(1.0 * initial_prior_var)), min=0.0) + (
+                        1.0 / np.exp(1.0 * initial_prior_var)))
+    else:
+        mean_term = (mean - prior_mean) ** 2 * torch.exp(-prior_exp_var)
+    det_term = prior_exp_var - exp_var
+
+    if sum:
+        return 0.5 * torch.sum(trace_term + mean_term + det_term - 1)
+    else:
+        return 0.5 * (trace_term + mean_term + det_term - 1)
+
+def kl_mixture_gauss(distribution_a, distribution_b, gauss_mixture=3, lamb=1):
+    r""" Computing KL distance between 2 distributions in Gaussian Mixture case
+
+    Args:
+        distribution_a: form [mean, variance, coefficient]
+        distribution_b: form [mean, variance, coefficient]
+        gauss_mixture: number of Gauss distribution for approximate a posterior
+        lamb: hyperparameter for approximate a posterior
+
+    Returns:
+        KL distances between 2 distributions in GMM case
+    """
+    mean_a, mean_b = distribution_a[0], distribution_b[0]
+    var_a, var_b = distribution_a[1], distribution_b[1]
+    coff_a, coff_b = distribution_a[2], distribution_b[2]
+    kl = 0
+    for i in range(gauss_mixture):
+        kl += torch.sum(coff_a[i] * (torch.log(coff_a[i]) - torch.log(coff_b[i])))
+        kl += torch.sum(coff_a[i] * compute_kl(mean_a[i], var_a[i], mean_b[i], var_b[i], sum=False, lamb=lamb))
+    return kl
+
 if __name__ == '__main__':
     pass
-
-
