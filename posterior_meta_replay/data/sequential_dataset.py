@@ -1,8 +1,31 @@
+#!/usr/bin/env python3
+# Copyright 2020 Christian Henning
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+# @title          :data/sequential_dataset.py
+# @author         :ch
+# @contact        :henningc@ethz.ch
+# @created        :03/31/2020
+# @version        :1.0
+# @python_version :3.6.10
 """
 Wrapper for sequential datasets
 -------------------------------
+
 The module :mod:`data.sequential_dataset` contains an abstract wrapper for
 datasets containing sequential data.
+
 Even though the dataset interface :class:`data.dataset.Dataset` contains basic
 support for sequential datasets, this wrapper was considered necessary to
 increase the convinience when working with sequential datasets (especially,
@@ -15,14 +38,17 @@ from data.dataset import Dataset
 
 class SequentialDataset(Dataset):
     """A general wrapper for datasets with sequential inputs and outpus.
+
     Attributes:
         max_num_ts_in (int): The maximum number of timesteps input sequences
             may have.
+
             Note:
                 Internally, all input sequences are stored according to this
                 length using zero-padding.
         max_num_ts_out (int): The maximum number of timesteps output sequences
             may have.
+
             Note:
                 Internally, all output sequences are stored according to this
                 length using zero-padding.
@@ -72,12 +98,14 @@ class SequentialDataset(Dataset):
 
     def get_in_seq_lengths(self, sample_ids):
         """Get the unpadded input sequence lengths for given samples.
+
         Args:
             sample_ids (numpy.ndarray): A 1D numpy array of unique sample
                 identifiers. Please see documentation of option ``return_ids``
                 of method :meth:`data.dataset.Dataset.next_train_batch` as well
                 as method :meth:`data.dataset.Dataset.get_train_ids` for more
                 information of sample identifiers.
+
         Returns:
             (numpy.ndarray): A 1D array of the same length as ``sample_ids``
             containing the unpadded input sequence lengths of these samples.
@@ -86,9 +114,12 @@ class SequentialDataset(Dataset):
 
     def get_out_seq_lengths(self, sample_ids):
         """Get the unpadded output sequence lengths for given samples.
+
         See documentation of method :meth:`get_in_seq_lengths`.
+
         Args:
             (....): See docstring of method :meth:`get_in_seq_lengths`.
+
         Returns:
             (numpy.ndarray): A 1D numpy array.
         """
@@ -98,9 +129,11 @@ class SequentialDataset(Dataset):
     def _flatten_array(arr, ts_dim_first=False, reverse=False,
                        feature_shape=None):
         """Helper function to flatten arrays.
+
         Flattens a given numpy array such that it is prepared for internal
         storage in attributes such as ``self._data['in_data']`` and
         ``self._data['out_data']``.
+
         Args:
             arr (numpy.ndarray): Numpy array of shape
                 ``[batch_size, time_steps, *arr.shape[2:]]``.
@@ -113,6 +146,7 @@ class SequentialDataset(Dataset):
                 In this case, the array will be unflattened.
             feature_shape (list, optional): Only required if ``reverse`` is
                 ``True``.
+
         Returns:
             (numpy.ndarray): Numpy array of shape
             ``[batch_size, time_steps * np.prod(arr.shape[2:])]``.
@@ -147,9 +181,11 @@ class SequentialDataset(Dataset):
                               force_no_preprocessing=False, sample_ids=None):
         """This method can be used to map the internal numpy arrays to PyTorch
         tensors.
+
         Args:
             (....): See docstring of method
                 :meth:`data.dataset.Dataset.input_to_torch_tensor`.
+
         Returns:
             (torch.Tensor): The given input ``x`` as PyTorch tensor. It has
             dimensions ``[T, B, *in_shape]``, where ``T`` is the number of time
@@ -168,9 +204,11 @@ class SequentialDataset(Dataset):
                               force_no_preprocessing=False, sample_ids=None):
         """Similar to method :meth:`input_to_torch_tensor`, just for dataset
         outputs.
+
         Args:
             (....): See docstring of method
                 :meth:`data.dataset.Dataset.output_to_torch_tensor`.
+
         Returns:
             (torch.Tensor): The given input ``x`` as PyTorch tensor. It has
             dimensions ``[T, B, *out_shape]``, where ``T`` is the number of time
@@ -191,3 +229,5 @@ class SequentialDataset(Dataset):
 
 if __name__ == '__main__':
     pass
+
+

@@ -1,11 +1,37 @@
+#!/usr/bin/env python3
+# Copyright 2018 Christian Henning
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+# @title           :mnist_data.py
+# @author          :ch
+# @contact         :henningc@ethz.ch
+# @created         :08/08/2018
+# @version         :1.0
+# @python_version  :3.6.6
 """
 MNIST Dataset
 -------------
+
 The module :mod:`data.mnist_data` contains a handler for the MNIST dataset.
+
 The implementation is based on an earlier implementation of a class I used in
 another project:
+
     https://git.io/fNyQL
+
 Information about the dataset can be retrieved from:
+
     http://yann.lecun.com/exdb/mnist/
 """
 
@@ -24,11 +50,14 @@ from data.dataset import Dataset
 
 class MNISTData(Dataset):
     """An instance of the class shall represent the MNIST dataset.
+
     The constructor checks whether the dataset has been read before (a pickle
     dump has been generated). If so, it reads the dump. Otherwise, it
     reads the data from scratch and creates a dump for future usage.
+
     Note:
         By default, input samples are provided in a range of ``[0, 1]``.
+
     Args:
         data_path (str): Where should the dataset be read from? If not existing,
             the dataset will be downloaded into this folder.
@@ -39,9 +68,11 @@ class MNISTData(Dataset):
             samples).
         use_torch_augmentation (bool): Apply data augmentation to inputs when
             calling method :meth:`data.dataset.Dataset.input_to_torch_tensor`.
+
             The augmentation will withening the inputs according to training
             image statistics (mean: ``0.1307``, std: ``0.3081``). In training
             mode, it will additionally apply random crops.
+
             Note:
                 If activated, the statistics of test samples are changed as
                 a normalization is applied.
@@ -57,7 +88,8 @@ class MNISTData(Dataset):
     # In which subfolder of the datapath should the data be stored.
     _SUBFOLDER = 'MNIST'
 
-    def __init__(self, data_path, use_one_hot=False, validation_size=5000, use_torch_augmentation=False):
+    def __init__(self, data_path, use_one_hot=False, validation_size=5000,
+                 use_torch_augmentation=False):
         super().__init__()
 
         start = time.time()
@@ -205,8 +237,10 @@ class MNISTData(Dataset):
     @staticmethod
     def _read_labels(filename):
         """Reading a set of labels from a file.
+
         Args:
             filename: Path and name of the byte file that contains the labels.
+
         Returns:
             The labels as a 1D numpy array.
         """
@@ -228,8 +262,10 @@ class MNISTData(Dataset):
     @staticmethod
     def _read_images(filename):
         """Reading a set of images from a file.
+
         Args:
             filename: Path and name of the byte file that contains the images.
+
         Returns:
             The images stacked in a 2D array, where each row is one image.
         """
@@ -259,10 +295,13 @@ class MNISTData(Dataset):
     @staticmethod
     def plot_sample(image, label=None, interactive=False, file_name=None):
         """Plot a single MNIST sample.
+
         This method is thought to be helpful for evaluation and debugging
         purposes.
+
         .. deprecated:: 1.0
             Please use method :meth:`data.dataset.Dataset.plot_samples` instead.
+
         Args:
             image: A single MNIST image (given as 1D vector).
             label: The label of the given image.
@@ -297,14 +336,18 @@ class MNISTData(Dataset):
                               force_no_preprocessing=False, sample_ids=None):
         """This method can be used to map the internal numpy arrays to PyTorch
         tensors.
+
         Note, this method has been overwritten from the base class.
+
         If enabled via constructor option ``use_torch_augmentation``, input
         images are preprocessed.
         Preprocessing involves normalization and (for training mode) random
         perturbations.
+
         Args:
             (....): See docstring of method
                 :meth:`data.dataset.Dataset.input_to_torch_tensor`.
+
         Returns:
             (torch.Tensor): The given input ``x`` as PyTorch tensor.
         """
@@ -367,6 +410,7 @@ class MNISTData(Dataset):
     def _plot_config(self, inputs, outputs=None, predictions=None):
         """Re-Implementation of method
         :meth:`data.dataset.Dataset._plot_config`.
+
         This method has been overriden to ensure, that there are 2 subplots,
         in case the predictions are given.
         """
@@ -386,14 +430,18 @@ class MNISTData(Dataset):
     @staticmethod
     def torch_input_transforms(use_random_hflips=False):
         """Get data augmentation pipelines for MNIST inputs.
+
         Args:
             use_random_hflips (bool): Also use random horizontal flips during
                 training.
+
                 Note:
                     That should not be ``True`` for MNIST, since digits loose
                     there meaning when flipped.
+
         Returns:
             (tuple): Tuple containing:
+
                 - **train_transform**: A transforms pipeline that applies random
                   transformations and normalizes the image.
                 - **test_transform**: Similar to train_transform, but no random
@@ -422,3 +470,5 @@ class MNISTData(Dataset):
 
 if __name__ == '__main__':
     pass
+
+

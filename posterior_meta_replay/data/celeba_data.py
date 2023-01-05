@@ -1,12 +1,37 @@
+#!/usr/bin/env python3
+# Copyright 2018 Christian Henning
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+# @title           :data/celeba_data.py
+# @author          :ch
+# @contact         :henningc@ethz.ch
+# @created         :09/20/2018
+# @version         :1.0
+# @python_version  :3.6.6
 """
 CelebA Dataset
 --------------
+
 The module :mod:`data.celeba_data` contains a handler for the CelebA dataset.
+
 More information about the dataset can be retrieved from:
     http://mmlab.ie.cuhk.edu.hk/projects/CelebA.html
+
 Note, in the current implementation, this handler will not download and extract
 the dataset for you. You have to do this manually by following the instructions
 of the README file (which is located in the same folder as this file).
+
 **Note, this dataset has not yet been prepared for PyTorch use!**
 """
 
@@ -21,12 +46,15 @@ from data.large_img_dataset import LargeImgDataset
 
 class CelebAData(LargeImgDataset):
     """An instance of the class shall represent the CelebA dataset.
+
     The input data of the dataset will be strings to image files. The output
     data will be vectors of booleans, denoting whether a certain type of
     attribute is present in the picture.
+
     .. note::
         The dataset has to be already downloaded and extracted before
         this class can be instantiated. See the local README file for details.
+
     Args:
         data_path (str): Where should the dataset be read from?
         use_png (bool): Whether the png rather than the jpeg images should be
@@ -102,6 +130,7 @@ class CelebAData(LargeImgDataset):
     def _read_dataset(self, data_path, shape=None):
         """Read the dataset into memory. Note, the images are not fetched into
         memory, only their filenames.
+
         Args:
             data_path: Where is the relative location of the dataset.
             shape (optional): The shape of the input images.
@@ -257,6 +286,7 @@ class CelebAData(LargeImgDataset):
     def get_attribute_names(self):
         """Get the names of the different attributes classified by this
         dataset.
+
         Returns:
             (list): A list of attributes. The order of the list will have the
             same order as the output labels.
@@ -288,3 +318,5 @@ class CelebAData(LargeImgDataset):
 
 if __name__ == '__main__':
     pass
+
+

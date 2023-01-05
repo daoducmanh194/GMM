@@ -1,19 +1,46 @@
+#!/usr/bin/env python3
+# Copyright 2018 Christian Henning
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+# @title           :data/large_img_dataset.py
+# @author          :ch
+# @contact         :henningc@ethz.ch
+# @created         :09/20/2018
+# @version         :1.0
+# @python_version  :3.6.6
 """
 Wrapper for large image datasets
 --------------------------------
+
 The module :mod:`data.large_img_dataset` contains an abstract wrapper for large
 datasets, that have images as inputs. Typically, these datasets are too large to
 be loaded into memory. Though, their outputs (labels) can still easily be hold
 in memory. Hence, the idea is, that instead of loading the actual images, we
 load the paths for each image into memory. Then we can load the images from disk
 as needed.
+
 To sum up, handlers that implement this interface will hold the outputs and
 paths for the input images of the whole dataset in memory, but not the actual
 images.
+
 As an alternative, one can implement wrappers for HDF5 and TFRecord files.
+
 Here is a simple example that illustrates the format of the dataset:
+
     https://www.tensorflow.org/guide/datasets#decoding_image_data_and_resizing_\
 it
+
 In case of working with PyTorch, rather than using the internal methods for
 batch processing (such as :meth:`data.dataset.Dataset.next_train_batch`) one
 should adapt PyTorch its data processing utilities (consisting of
@@ -32,10 +59,13 @@ class LargeImgDataset(Dataset):
     """A general dataset template for datasets with images as inputs, that are
     locally stored as individual files. Note, that this is an abstract class
     that should not be instantiated.
+
     Hints, when implementing the interface:
+
         - Attribute :attr:`data.dataset.Dataset.in_shape` still has to be
           correctly implemented, independent of the fact, that the actual input
           data is a list of strings.
+
     Attributes:
         imgs_path (str): The base path of all images.
         png_format_used (bool): Whether png or jped encoded of images is
@@ -46,6 +76,7 @@ class LargeImgDataset(Dataset):
             dataset.
         torch_val (torch.utils.data.Dataset): The PyTorch compatible validation
             dataset.
+
     Args:
         imgs_path (str): The path to the folder, containing the image files
             (the actual image paths contained in the input data (see e.g.,
@@ -132,8 +163,10 @@ class LargeImgDataset(Dataset):
 
     def read_images(self, inputs):
         """For the given filenames, read and return the images.
+
         Args:
             inputs (numpy.chararray): An np.chararray of filenames.
+
         Returns:
             (numpy.ndarray): A 2D numpy array, where each row contains a
             picture.
@@ -159,12 +192,15 @@ class LargeImgDataset(Dataset):
 
     def tf_input_map(self, mode='inference'):
         """Note, this method has been overwritten from the base class.
+
         It provides a function handle that loads images from file, resizes them
         to match the internal input image size and then flattens the image to
         a vector.
+
         Args:
             (....): See docstring of method
                 :meth:`data.dataset.Dataset.tf_input_map`.
+
         Returns:
             (function): A function handle, that maps the given input tensor to
             the preprocessed input tensor.
@@ -197,6 +233,7 @@ class LargeImgDataset(Dataset):
         not be used for large image datasets. Instead, the class should provide
         instances of class :class:`torch.utils.data.Dataset` for training,
         validation and test set:
+
             - :attr:`torch_train`
             - :attr:`torch_test`
             - :attr:`torch_val`
@@ -207,3 +244,5 @@ class LargeImgDataset(Dataset):
 
 if __name__ == '__main__':
     pass
+
+

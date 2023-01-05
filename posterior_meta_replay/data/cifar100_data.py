@@ -1,10 +1,34 @@
+#!/usr/bin/env python3
+# Copyright 2019 Christian Henning
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+# @title           :data/cifar100_data.py
+# @author          :ch
+# @contact         :henningc@ethz.ch
+# @created         :05/02/2019
+# @version         :1.0
+# @python_version  :3.6.8
 """
 CIFAR-100 Dataset
 -----------------
+
 The module :mod:`data.cifar100_data` contains a handler for the CIFAR 100
 dataset.
+
 The dataset consists of 60000 32x32 colour images in 100 classes, with 600
 images per class. There are 50000 training images and 10000 test images.
+
 Information about the dataset can be retrieved from:
     https://www.cs.toronto.edu/~kriz/cifar.html
 """
@@ -24,6 +48,7 @@ from data.cifar10_data import CIFAR10Data
 
 class CIFAR100Data(Dataset):
     """An instance of the class shall represent the CIFAR-100 dataset.
+
     Args:
         data_path (str): Where should the dataset be read from? If not existing,
             the dataset will be downloaded into this folder.
@@ -33,6 +58,7 @@ class CIFAR100Data(Dataset):
             to input batches that are transformed using the class member
             :meth:`input_to_torch_tensor` (hence, **only available for
             PyTorch**, so far).
+
             Note:
                 If activated, the statistics of test samples are changed as
                 a normalization is applied (identical to the of class
@@ -44,6 +70,7 @@ class CIFAR100Data(Dataset):
             method :meth:`torch_input_transforms`. We use cutouts of size
             ``8 x 8`` as recommended
             `here <https://arxiv.org/pdf/1708.04552.pdf>`__.
+
             Note:
                 Only applies if ``use_data_augmentation`` is set.
     """
@@ -123,12 +150,14 @@ class CIFAR100Data(Dataset):
 
     def _read_meta(self, filename):
         """Read the meta data file.
+
         This method will add an additional field to the _data attribute named
         "cifar100". This dictionary will be filled with two members:
             * "fine_label_names": The names of the associated categorical class
                 labels.
             * "coarse_label_names": The names of the 20 coarse labels that are
                 associated to each sample.
+
         Args:
             filename: The path to the meta data file.
         """
@@ -144,11 +173,14 @@ class CIFAR100Data(Dataset):
 
     def _read_batches(self, train_fn, test_fn, validation_size):
         """Read training and testing batch from files.
+
         The method fills the remaining mandatory fields of the _data attribute,
         that have not been set yet in the constructor.
+
         The images are converted to match the output shape (32, 32, 3) and
         scaled to have values between 0 and 1. For labels, the correct encoding
         is enforced.
+
         Args:
             train_fn: Filepath of the train batch.
             test_fn: Filepath of the test batch.
@@ -216,13 +248,17 @@ class CIFAR100Data(Dataset):
                               force_no_preprocessing=False, sample_ids=None):
         """This method can be used to map the internal numpy arrays to PyTorch
         tensors.
+
         Note, this method has been overwritten from the base class.
+
         The input images are preprocessed if data augmentation is enabled.
         Preprocessing involves normalization and (for training mode) random
         perturbations.
+
         Args:
             (....): See docstring of method
                 :meth:`data.dataset.Dataset.input_to_torch_tensor`.
+
         Returns:
             (torch.Tensor): The given input ``x`` as PyTorch tensor.
         """
@@ -287,6 +323,7 @@ class CIFAR100Data(Dataset):
     def _plot_config(self, inputs, outputs=None, predictions=None):
         """Re-Implementation of method
         :meth:`data.dataset.Dataset._plot_config`.
+
         This method has been overriden to ensure, that there are 2 subplots,
         in case the predictions are given.
         """
@@ -305,3 +342,5 @@ class CIFAR100Data(Dataset):
 
 if __name__ == '__main__':
     pass
+
+

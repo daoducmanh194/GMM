@@ -1,12 +1,37 @@
+#!/usr/bin/env python3
+# Copyright 2020 Christian Henning
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+# @title          :data/svhn_data.py
+# @author         :ch
+# @contact        :henningc@ethz.ch
+# @created        :04/08/2020
+# @version        :1.0
+# @python_version :3.6.10
 """
 Street View House Numbers (SVHN) Dataset
 ----------------------------------------
+
 The module :mod:`data.svhn_data` contains a handler for the
 `SVHN <http://ufldl.stanford.edu/housenumbers>`__ dataset.
+
 The dataset was introduced in:
+
     Netzer et al., `Reading Digits in Natural Images with Unsupervised Feature \
 Learning <http://ufldl.stanford.edu/housenumbers/nips2011_housenumbers.pdf>`__,
     2011.
+
 This module contains a simple wrapper from the corresponding
 `torchvision <https://pytorch.org/docs/master/torchvision/datasets.html#svhn>`__
 class :class:`torchvision.datasets.SVHN` to our dataset interface
@@ -23,8 +48,10 @@ from data.dataset import Dataset
 
 class SVHNData(Dataset):
     """An instance of the class shall represent the SVHN dataset.
+
     Note:
         By default, input samples are provided in a range of ``[0, 1]``.
+
     Args:
         data_path (str): Where should the dataset be read from? If not existing,
             the dataset will be downloaded into this folder.
@@ -37,9 +64,11 @@ class SVHNData(Dataset):
             to input batches that are transformed using the class member
             :meth:`input_to_torch_tensor` (hence, **only available for
             PyTorch**, so far).
+
             The augmentation will be identical to the one provided by class
             :class:`data.cifar10_data.CIFAR10Data`, **except** that during
             training no random horizontal flips are applied.
+
             Note:
                 If activated, the statistics of test samples are changed as
                 a normalization is applied (identical to the of class
@@ -48,11 +77,13 @@ class SVHNData(Dataset):
             method :meth:`torch_input_transforms`. We use cutouts of size
             ``20 x 20`` as recommended
             `here <https://arxiv.org/pdf/1708.04552.pdf>`__.
+
             Note:
                 Only applies if ``use_data_augmentation`` is set.
         include_train_extra (bool): The training dataset can be extended by
             "531,131 additional, somewhat less difficult samples" (see
             `here <http://ufldl.stanford.edu/housenumbers>`__).
+
             Note, as long as the validation set size is smaller than the
             original training set size, all validation samples would be taken
             from the original training set (and thus not contain those "less
@@ -163,13 +194,17 @@ class SVHNData(Dataset):
                               force_no_preprocessing=False, sample_ids=None):
         """This method can be used to map the internal numpy arrays to PyTorch
         tensors.
+
         Note, this method has been overwritten from the base class.
+
         The input images are preprocessed if data augmentation is enabled.
         Preprocessing involves normalization and (for training mode) random
         perturbations.
+
         Args:
             (....): See docstring of method
                 :meth:`data.dataset.Dataset.input_to_torch_tensor`.
+
         Returns:
             (torch.Tensor): The given input ``x`` as PyTorch tensor.
         """
@@ -194,6 +229,7 @@ class SVHNData(Dataset):
                      outputs=None, predictions=None, batch_ids=None):
         """Implementation of abstract method
         :meth:`data.dataset.Dataset._plot_sample`.
+
         Args:
             batch_ids (numpy.ndarray, optional): If provided, then samples
                 stemming from the "extra" training set will be marked in the
@@ -240,6 +276,7 @@ class SVHNData(Dataset):
     def _plot_config(self, inputs, outputs=None, predictions=None):
         """Re-Implementation of method
         :meth:`data.dataset.Dataset._plot_config`.
+
         This method has been overriden to ensure, that there are 2 subplots,
         in case the predictions are given.
         """
@@ -263,3 +300,5 @@ class SVHNData(Dataset):
 
 if __name__ == '__main__':
     pass
+
+

@@ -1,6 +1,28 @@
+#!/usr/bin/env python3
+# Copyright 2019 Christian Henning
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+# @title           :permuted_mnist.py
+# @author          :ch
+# @contact         :henningc@ethz.ch
+# @created         :04/11/2019
+# @version         :1.0
+# @python_version  :3.6.7
 """
 Permuted MNIST Dataset
 ^^^^^^^^^^^^^^^^^^^^^^
+
 The module :mod:`data.special.permuted_mnist` contains a data handler for the
 permuted MNIST dataset.
 """
@@ -12,11 +34,13 @@ from data.mnist_data import MNISTData
 class PermutedMNISTList():
     """A list of permuted MNIST tasks that only uses a single instance of class
     :class:`PermutedMNIST`.
+
     An instance of this class emulates a Python list that holds objects of
     class :class:`PermutedMNIST`. However, it doesn't actually hold several
     objects, but only one with just the permutation matrix being exchanged
     everytime a different element of this list is retrieved. Therefore, **use
     this class with care**!
+
         - As all list entries are the same PermutedMNIST object, one should
           never work with several list entries at the same time!
           -> **Retrieving a new list entry will modify every previously
@@ -24,22 +48,28 @@ class PermutedMNISTList():
         - When retrieving a slice, a shallow copy of this object is created
           (i.e., the underlying :class:`PermutedMNIST` does not change) with
           only the desired subgroup of permutations avaliable.
+
     Why would one use this object? When working with many permuted MNIST tasks,
     then the memory consumption becomes significant if one desires to hold all
     task instances at once in working memory. An object of this class only needs
     to hold the MNIST dataset once in memory. Just the number of permutation
     matrices grows linearly with the number of tasks.
+
     Caution:
         **You may never use more than one entry of this class at the same
         time**, as all entries share the same underlying data object and
         therewith the same permutation.
+
     Note:
         The mini-batch generation process is maintained separately for every
         permutation. Thus, the retrieval of mini-batches for different
         permutations does not influence one another.
+
     Example:
         You should **never** use this list as follows
+
         .. code-block:: python
+
             dhandlers = PermutedMNISTList(permutations, '/tmp')
             d0 = dhandlers[0]
             # Zero-th permutation is active ...
@@ -48,16 +78,20 @@ class PermutedMNISTList():
             # First permutation is active for `d0` and `d1`!
             # Important, you may not use `d0` anymore, as this might lead to
             # undesired behavior.
+
     Example:
         Instead, always work with only one list entry at a time. The following
         usage would be **correct**
+
         .. code-block:: python
+
             dhandlers = PermutedMNISTList(permutations, '/tmp')
             d = dhandlers[0]
             # Zero-th permutation is active ...
             # ...
             d = dhandlers[1]
             # First permutation is active for `d` as expected.
+
     Args:
         (....): See docstring of constructor of class :class:`PermutedMNIST`.
         permutations: A list of permutations (see parameter ``permutation``
@@ -110,8 +144,10 @@ class PermutedMNISTList():
 
     def __getitem__(self, index):
         """Return the underlying data object with the index'th permutation.
+
         Args:
             index: Index of task for which data should be returned.
+
         Return:
             The data loader for task ``index``.
         """
@@ -182,10 +218,12 @@ class PermutedMNIST(MNISTData):
     """An instance of this class shall represent the permuted MNIST dataset,
     which is the same as the MNIST dataset, just that input pixels are shuffled
     by a random matrix.
+
     Note:
         Image transformations are computed on the fly when transforming batches
         to torch tensors. Hence, this class is only applicable to PyTorch
         applications. Internally, the class stores the unpermuted images.
+
     Attributes:
         permutation: The permuation matrix that is applied to input images
             before they are transformed to Torch tensors.
@@ -194,6 +232,7 @@ class PermutedMNIST(MNISTData):
             padding that is applied when calling
             :meth:`classifier.permuted_mnist.PermutedMNIST.\
 input_to_torch_tensor`.
+
     Args:
         data_path: Where should the dataset be read from? If not existing,
             the dataset will be downloaded into this folder.
@@ -207,6 +246,7 @@ input_to_torch_tensor`.
             permutation of the form
             :code:`np.random.permutation((28+2*padding)**2)`
         padding: The amount of padding that should be applied to images.
+
             .. note::
                 The padding is currently not reflected in the
                 `:attr:`data.dataset.Dataset.in_shape` attribute, as the padding
@@ -269,11 +309,15 @@ input_to_torch_tensor`.
                               force_no_preprocessing=False, sample_ids=None):
         """This method can be used to map the internal numpy arrays to PyTorch
         tensors.
+
         Note, this method has been overwritten from the base class.
+
         It applies zero padding and pixel permutations.
+
         Args:
             (....): See docstring of method
                 :meth:`data.dataset.Dataset.input_to_torch_tensor`.
+
         Returns:
             (torch.Tensor): The given input ``x`` as PyTorch tensor.
         """
@@ -309,10 +353,12 @@ input_to_torch_tensor`.
     @staticmethod
     def torch_input_transforms(permutation=None, padding=0):
         """Transform MNIST images to PyTorch tensors.
+
         Args:
             permutation: A given permutation that should be applied to all
                 images.
             padding: Apply a given amount of zero padding.
+
         Returns:
             A transforms pipeline.
         """
@@ -324,15 +370,19 @@ input_to_torch_tensor`.
         # this code WITHOUT ANY WARRANTIES.
         """
         MIT License
+
         Copyright (c) 2018 Gido van de Ven
+
         Permission is hereby granted, free of charge, to any person obtaining a copy
         of this software and associated documentation files (the "Software"), to deal
         in the Software without restriction, including without limitation the rights
         to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
         copies of the Software, and to permit persons to whom the Software is
         furnished to do so, subject to the following conditions:
+
         The above copyright notice and this permission notice shall be included in all
         copies or substantial portions of the Software.
+
         THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
         IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
         FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -343,9 +393,11 @@ input_to_torch_tensor`.
         """
         def _permutate_image_pixels(image, permutation):
             '''Permutate the pixels of an image according to 'permutation'.
+
             Args:
                 image: 3D-tensor containing the image
                 permutation: <ndarray> of pixel-indices in their new order
+
             Returns:
                 Permuted image.
             '''

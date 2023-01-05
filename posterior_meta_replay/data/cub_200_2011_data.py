@@ -1,24 +1,54 @@
+#!/usr/bin/env python3
+# Copyright 2019 Christian Henning
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+# @title           :data/cub_200_2011_data.py
+# @author          :ch
+# @contact         :henningc@ethz.ch
+# @created         :05/17/2019
+# @version         :1.0
+# @python_version  :3.6.8
 """
 CUB-200-2011 Dataset
 --------------------
+
 The module :mod:`data.cub_200_2011_data` contains a dataloader for the
 Caltech-UCSD Birds-200-2011 Dataset (CUB-200-2011).
+
 The dataset is available at:
+
     http://www.vision.caltech.edu/visipedia/CUB-200-2011.html
+
 For more information on the dataset, please refer to the corresponding
 publication:
+
     Wah et al., "The Caltech-UCSD Birds-200-2011 Dataset",
     California Institute of Technology, 2011.
     http://www.vision.caltech.edu/visipedia/papers/CUB_200_2011.pdf
+
 The dataset consists of 11,788 images divided into 200 categories. The dataset
 has a specified train/test split and a lot of additional information (bounding
 boxes, segmentation, parts annotation, ...) that we don't make use of yet.
+
 .. note::
     This dataset should not be confused with the older version CUB-200,
     containing only 6,033 images.
+
 .. note ::
     We use the same data augmentation as for class
     :class:`data.ilsvrc2012_data.ILSVRC2012Data`.
+
 .. note::
     The original category labels range from 1-200. We modify them to range
     from 0 - 199.
@@ -51,18 +81,23 @@ from data.ilsvrc2012_data import ILSVRC2012Data
 
 class CUB2002011(LargeImgDataset):
     """An instance of the class shall represent the CUB-200-2011 dataset.
+
     The input data of the dataset will be strings to image files. The output
     data corresponds to object labels (bird categories).
+
     Note:
         The dataset will be downloaded if not available.
+
     Note:
         The original category labels range from 1-200. We modify them to
         range from 0 - 199.
+
     Args:
         data_path (str): Where should the dataset be read from? If not existing,
             the dataset will be downloaded into this folder.
         use_one_hot (bool): Whether the class labels should be represented in a
             one-hot encoding.
+
             .. note::
                 This option does not influence the internal PyTorch
                 Dataset classes (e.g., cmp.
@@ -72,6 +107,7 @@ class CUB2002011(LargeImgDataset):
             For instance: If value 10 is given, a validation set of size
             5 * 200 = 1,000 is constructed (these samples will be removed
             from the training set).
+
             .. note::
                 Validation samples use the same data augmentation pipeline
                 as test samples.
@@ -328,3 +364,5 @@ class CUB2002011(LargeImgDataset):
 
 if __name__ == '__main__':
     pass
+
+

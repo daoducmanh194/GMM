@@ -1,38 +1,77 @@
+#!/usr/bin/env python3
+# Copyright 2020 Christian Henning
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+# @title           :data/special/gmm_data.py
+# @author          :ch
+# @contact         :henningc@ethz.ch
+# @created         :08/06/2019
+# @version         :1.0
+# @python_version  :3.6.8
 r"""
 Gaussian Mixture Model Dataset
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
 The module :mod:`data.special.gaussian_mixture_data` is stemming from a
 conditional view, where every mode in the Gaussian mixture is a separate task
 (single dataset). Therefore, it provides ``N`` distinct data handlers when
 having ``N`` distinct modes.
+
 Unfortunately, this configuration is not ideal for unsupervised GAN training (as
 we want to be able to provide batches that contain data from a mix of modes
 without having to manually assemble these batches) or for training a classifier
 for a GMM toy problem.
+
 Therefore, this module provides a wrapper that converts a sequence of data
 handlers of class :class:`data.special.gaussian_mixture_data.GaussianData`
 (i.e., a set of single modes) to a combined data handler.
+
 **Model description:**
+
 Let :math:`x` denote the input data. The class :class:`GMMData` assumes that
 it's input training data is drawn from the following Gaussian Mixture Model:
+
 .. math::
+
     p(x) = \sum_{k=1}^K \pi_k \mathcal{N}(x; \mu_k, \Sigma_k)
+
 with mixing coefficients :math:`\pi_k`, such that :math:`\sum_k \pi_k = 1`.
+
 Note, it is up to the user of this class to provide appropriate training data
 (only important to keep in mind if unequal train set sizes are provided via
 constructor argument ``gaussian_datasets`` or if ``mixing_coefficients`` are
 non-uniform).
+
 Let :math:`y` denote a :math:`K`-dimensional 1-hot encoding, i.e.,
 :math:`y_k \in \{0, 1\}` and :math:`\sum_k y_k = 1`. Thus, :math:`y` is the
 latent variable that we want to infer (e.g., the optimal classification label)
 with marginal probabilities:
+
 .. math::
+
     p(y_k=1) = \pi_k
+
 The conditional likelihood of a component is:
+
 .. math::
+
     p(x \mid y_k=1) = \mathcal{N}(x; \mu_k, \Sigma_k)
+
 Using Bayes Theorem we obtain the posterior:
+
 .. math::
+
     p(y_k=1 \mid x) &= \frac{p(x \mid y_k=1) p(y_k=1)}{p(x)} \\ \
         &= \frac{\pi_k \mathcal{N}(x; \mu_k, \Sigma_k)}{ \
             \sum_{l=1}^K \pi_l \mathcal{N}(x; \mu_l, \Sigma_l)}
@@ -52,21 +91,26 @@ from utils import misc
 
 class GMMData(Dataset):
     r"""Dataset with inputs drawn from a Gaussian mixture model.
+
     An instance of this class combines several instances of class
     :class:`data.special.gaussian_mixture_data.GaussianData` into one data
     handler. I.e., multiple gaussian bumps are combined to a Gaussian mixture
     dataset.
+
     Most importantly, the dataset can be turned into a classification task,
     where the label corresponds to the ID of the Gaussian bump from which the
     sample was drawn. Otherwise, the original outputs will remain.
+
     Note:
         You can use function
         :func:`data.special.gaussian_mixture_data.get_gmm_tasks` to create a set
         of tasks to be passed as constructor argument ``gaussian_datasets``.
+
     Attributes:
         num_modes (int): The number of mixture components.
         means (np.ndarray): 2D array, containing the mean of each component
             in its rows.
+
     Args:
         gaussian_datasets (list): A list of instances of class
             :class:`data.special.gaussian_mixture_data.GaussianData`.
@@ -81,10 +125,14 @@ class GMMData(Dataset):
             :math:`\pi_k` of the individual mixture components. If not
             specified, :math:`\pi_k` will be assumed to be
             ``1. / self.num_modes``.
+
             .. math::
+
                 p(x) = \sum_{k=1}^K \pi_k \mathcal{N}(x; \mu_k, \Sigma_k)
+
             Note:
                 Mixing coefficients have to sum to ``1``.
+
             Note:
                 If mixing coefficients are not uniform, then one has to
                 externally ensure that the training data is distributed
@@ -196,6 +244,7 @@ class GMMData(Dataset):
                      show=True, filename=None, interactive=False,
                      figsize=(10, 6)):
         """Plot samples belonging to this dataset.
+
         Args:
             (....): See docstring of method
                 :meth:`data.dataset.Dataset.plot_samples`.
@@ -266,6 +315,7 @@ class GMMData(Dataset):
                        interactive=False, figsize=(10, 6)):
         """Useful method when using this dataset in conjunction with GAN
         training. Plots the given real and fake input samples in a 2D plane.
+
         Args:
             (....): See docstring of method
                 :meth:`data.dataset.Dataset.plot_samples`.
@@ -301,11 +351,13 @@ class GMMData(Dataset):
     def _compute_responsibilities(self, samples, normalize=False, eps=None):
         r"""Compute the responsibility :math:`p(y_k=1 \mid x)` of each sample
         towards each mixture component (i.e., for all :math:`k`).
+
         Args:
             samples: A 2D numpy array, where each row is an input sample.
             normalize: Whether responsibilities should sum to 1.
             eps (float, optional): If specified, will be used during
                 normalization to avoid division by zero.
+
         Returns:
             See argument ``responsibilities`` of method
             :meth:`estimate_mode_coverage`.
@@ -324,13 +376,17 @@ class GMMData(Dataset):
 
     def estimate_mode_coverage(self, fake, responsibilities=None):
         """Compute the mode coverage of fake samples as suggested in
+
             https://arxiv.org/abs/1606.00704
+
         This method will compute the responsibilities for each fake sample
         towards each mixture component and assign each sample to the mixture
         component with the highest responsibility. Mixture components that
         get no fake sample assigned are considered dropped modes.
+
         The paper referenced above used 10,000 fake samples (on their synthetic
         dataset) to measure the mode coverage.
+
         Args:
             fake: A 2D numpy array, where each row is an input sample (usually
                 drawn from a generator network).
@@ -338,8 +394,10 @@ class GMMData(Dataset):
                 data point (may be unnormalized). A 2D numpy array with each
                 row corresponding to a sample in `fake` and each column
                 corresponding to a mode in this dataset.
+
         Returns:
             (tuple): A tuple containing:
+
             - **num_covered**: The number of modes that have at least one fake
               sample with maximum responsibility being assigned to that mode.
             - **responsibilities**: The given or computed `responsibilities`. If
@@ -364,18 +422,23 @@ class GMMData(Dataset):
                           density_estimation='hist', eps=1e-5):
         r"""This method estimates the distance/divergence of the empirical fake
         distribution with the underlying true data disctribution.
+
         Therefore, we utilize the fact that we know the data distribution.
+
         The following distance/divergence measures are implemented:
+
         - `Symmetric KL divergence`: The fake samples are used to estimate the
           model density. The fake samples are used to estimate
           :math:`D_\text{KL}(\text{fake} \mid\mid \text{real})`. An additional
           set of real samples is drawn from the training data to compute a
           Monte Carlo estimate of
           :math:`D_\text{KL}(\text{real} \mid\mid \text{fake})`.
+
           Comment from Simone Surace about this approach: "Doing density
           estimation first and then computing the integral is known to be
           the wrong way to go (there is an entire literature about this
           problem)." This should be kept in mind when using this estimate.
+
         Args:
             fake (numpy.ndarray): A 2D numpy array, where each row is an input
                 sample (usually drawn from a generator network).
@@ -389,6 +452,7 @@ class GMMData(Dataset):
                 the model distribution (i.e., density of given samples under the
                 distribution estimated from those samples).
                 Available methods are:
+
                 - ``'hist'``: We estimate the fake density based on a normalized
                   2D histogram of the samples. We use the Square-root choice to
                   compute the number of bins per dimension.
@@ -397,6 +461,7 @@ class GMMData(Dataset):
                   Note, we don't change the default ```bandwidth``` value!
             eps (float): We don't allow densities to be smaller than this value
                 for numerical stability reasons (when computing the log).
+
         Returns:
             The estimated symmetric KL divergence.
         """
@@ -512,6 +577,7 @@ class GMMData(Dataset):
         plt.xlabel('x1')
         plt.ylabel('x2')
         plt.show()
+
         plt.figure()
         plt.title('estimated data density of fake samples', size=20)
         norm = Normalize(vmin=fake_model_densities.min(),
@@ -543,8 +609,10 @@ class GMMData(Dataset):
         
         The default grid returned by this method will also be the default grid
         used by the method :meth:`plot_uncertainty_map`.
+
         Note:
             This method is only implemented for 2D datasets.
+
         Args:
             x1_range (tuple, optional): The min and max value for the first
                 input dimension. If not specified, the range will be
@@ -559,8 +627,10 @@ class GMMData(Dataset):
                 If an integer is passed, then the same number grid size will be
                 used for both dimension. The grid is build by equally spacing
                 ``grid_size`` inside the ranges ``x1_range`` and ``x2_range``.
+
         Returns:
             (tuple): Tuple containing:
+
             - **x1_grid** (numpy.ndarray): A 2D array, containing the grid
               values of the first dimension.
             - **x2_grid** (numpy.ndarray): A 2D array, containing the grid
@@ -616,6 +686,7 @@ class GMMData(Dataset):
                              norm_eps=None, show=True, filename=None,
                              figsize=(10, 6)):
         r"""Draw an uncertainty heatmap.
+
         Args:
             title (str): Title of plots.
             input_mesh (tuple, optional): The input mesh of the heatmap (see
@@ -628,9 +699,11 @@ class GMMData(Dataset):
                 :math:`k=1..K` for
                 
                 .. math::
+
                     p(y_k = 1 \mid x) = \frac{ \
                      \pi_k \mathcal{N}(x; \mu_k, \Sigma_k)}{\
                      \sum_{l=1}^K \pi_l \mathcal{N}(x; \mu_l, \Sigma_l)}
+
                 Note:
                     The entropies will be normalized by the maximum uncertainty
                     ``-np.log(1.0 / self.num_modes)``.
@@ -643,26 +716,33 @@ class GMMData(Dataset):
                 plotted by default (if ``uncertainties`` is left unspecified)
                 are based on the entropy of :math:`p(y, x)` at location
                 :math:`x`:
+
                 .. math::
+
                     & - \sum_k p(x) p(y_k=1 \mid x) \log p(x) p(y_k=1 \mid x)\\\
                     =& -p(x) \sum_k p(y_k=1 \mid x) \log p(y_k=1 \mid x) - \
                         p(x) \log p(x)
+
                 Note, we normalize :math:`p(x)` by its maximum inside the chosen
                 grid. Hence, the plot depends on the chosen ``input_mesh``. In
                 this way, :math:`p(x) \in [0, 1]` and the second term
                 :math:`-p(x) \log p(x) \in [0, \exp(-1)]` (note,
                 :math:`-p(x) \log p(x)` would be negative for :math:`p(x) > 1`).
+
                 The first term is simply the entropy of :math:`p(y \mid x)`
                 scaled by :math:`p(x)`. Hence, it shows where in the input space
                 are the regions where Gaussian bumps are overlapping (regions
                 in which data exists but multiple labels :math:`y` are
                 possible).
+
                 The second term shows the boundaries of the data manifold. Note,
                 :math:`-1 \log 1 = 0` and
                 :math:`-\lim_{p(x) \rightarrow 0} p(x) \log p(x) = 0`.
+
                 Note:
                     This option is mutually exclusive with option
                     ``use_generative_uncertainty``.
+
                 Note:
                     Entropies of :math:`p(y \mid x)` won't be normalized in this
                     case.
@@ -780,10 +860,12 @@ class GMMData(Dataset):
                                     show=True, filename=None, figsize=(10, 6)):
         r"""Plot a color-coded grid on how to optimally classify for each input
         value.
+
         Note:
             Since the training data is drawn randomly, it might be that some
             training samples have a label that doesn't correpond to the optimal
             label.
+
         Args:
             (....): See arguments of method :meth:`plot_uncertainty_map`.
             mesh_modes (numpy.ndarray, optional): If not provided, then the
@@ -843,8 +925,10 @@ class GMMData(Dataset):
 
     def _draw_components(self, label=None):
         """Sketh the individual Gaussian components in the current plot.
+
         Method can be called while building a plot. It will sketch the mean
         of each component as well as the covariance matrix (as an ellipse).
+
         Args:
             label (str): Legend label associated with the added scatter plot
                 of means.

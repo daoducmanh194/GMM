@@ -1,9 +1,33 @@
+#!/usr/bin/env python3
+# Copyright 2018 Christian Henning
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+# @title           :cifar10_data.py
+# @author          :ch
+# @contact         :henningc@ethz.ch
+# @created         :08/08/2018
+# @version         :1.0
+# @python_version  :3.6.6
 """
 CIFAR-10 Dataset
 ----------------
+
 The module :mod:`data.cifar10_data` contains a handler for the CIFAR 10 dataset.
+
 The dataset consists of 60000 32x32 colour images in 10 classes, with 6000
 images per class. There are 50000 training images and 10000 test images.
+
 Information about the dataset can be retrieved from:
     https://www.cs.toronto.edu/~kriz/cifar.html
 """
@@ -22,13 +46,16 @@ from utils.torch_utils import CutoutTransform
 
 class CIFAR10Data(Dataset):
     """An instance of the class shall represent the CIFAR-10 dataset.
+
     Note, the constructor does not safe a data dump (via pickle) as, for
     instance, the MNIST data handler (:class:`data.mnist_data.MNISTData`) does.
     The reason is, that the downloaded files are already in a nice to read
     format, such that the time saved to read the file from a dump file is
     minimal.
+
     Note:
         By default, input samples are provided in a range of ``[0, 1]``.
+
     Args:
         data_path (str): Where should the dataset be read from? If not existing,
             the dataset will be downloaded into this folder.
@@ -38,6 +65,7 @@ class CIFAR10Data(Dataset):
             to input batches that are transformed using the class member
             :meth:`input_to_torch_tensor` (hence, **only available for
             PyTorch**, so far).
+
             Note:
                 If activated, the statistics of test samples are changed as
                 a normalization is applied.
@@ -48,6 +76,7 @@ class CIFAR10Data(Dataset):
             method :meth:`torch_input_transforms`. We use cutouts of size
             ``16 x 16`` as recommended
             `here <https://arxiv.org/pdf/1708.04552.pdf>`__.
+
             Note:
                 Only applies if ``use_data_augmentation`` is set.
     """
@@ -162,11 +191,14 @@ class CIFAR10Data(Dataset):
 
     def _read_meta(self, filename):
         """Read the meta data file.
+
         This method will add an additional field to the ``_data`` attribute
         named "cifar10". This dictionary will be filled with two members:
+
             - "label_names": The names of the associated categorical class
                 labels.
             - "num_cases_per_batch": The number of samples in each batch.
+
         Args:
             filename: The path to the meta data file.
         """
@@ -183,11 +215,14 @@ class CIFAR10Data(Dataset):
 
     def _read_batches(self, train_fns, test_fn, validation_size):
         """Read all batches from files.
+
         The method fills the remaining mandatory fields of the _data attribute,
         that have not been set yet in the constructor.
+
         The images are converted to match the output shape (32, 32, 3) and
         scaled to have values between 0 and 1. For labels, the correct encoding
         is enforced.
+
         Args:
             train_fns: The filepaths of the different training batches (files
                 are assumed to be in order).
@@ -258,7 +293,9 @@ class CIFAR10Data(Dataset):
 
     def _get_batch_identifier(self, index):
         """Return the identifier of the batch a given sample is drawn from.
+
         Batches 1 to 5 are the training batches. Batch 6 is the test batch.
+
         Args:
             index: The sample index (row index) in _data['in_data'].
         """
@@ -267,10 +304,13 @@ class CIFAR10Data(Dataset):
     def plot_sample(self, image, label=None, figsize = 1.5, interactive=False,
                     file_name=None):
         """Plot a single CIFAR-10 sample.
+
         This method is thought to be helpful for evaluation and debugging
         purposes.
+
         .. deprecated:: 1.0
             Please use method :meth:`data.dataset.Dataset.plot_samples` instead.
+
         Args:
             image: A single CIFAR-10 image (given as 1D vector).
             label: The label of the given image.
@@ -309,13 +349,17 @@ class CIFAR10Data(Dataset):
                               force_no_preprocessing=False, sample_ids=None):
         """This method can be used to map the internal numpy arrays to PyTorch
         tensors.
+
         Note, this method has been overwritten from the base class.
+
         The input images are preprocessed if data augmentation is enabled.
         Preprocessing involves normalization and (for training mode) random
         perturbations.
+
         Args:
             (....): See docstring of method
                 :meth:`data.dataset.Dataset.input_to_torch_tensor`.
+
         Returns:
             (torch.Tensor): The given input ``x`` as PyTorch tensor.
         """
@@ -380,6 +424,7 @@ class CIFAR10Data(Dataset):
     def _plot_config(self, inputs, outputs=None, predictions=None):
         """Re-Implementation of method
         :meth:`data.dataset.Dataset._plot_config`.
+
         This method has been overriden to ensure, that there are 2 subplots,
         in case the predictions are given.
         """
@@ -400,14 +445,17 @@ class CIFAR10Data(Dataset):
     def torch_input_transforms(apply_rand_hflips=True, apply_cutout=False,
                                cutout_length=16, cutout_n_holes=1):
         """Get data augmentation pipelines for CIFAR-10 inputs.
+
         Note, the augmentation is inspired by the augmentation proposed in:
             https://www.aiworkbox.com/lessons/augment-the-cifar10-dataset-using\
 -the-randomhorizontalflip-and-randomcrop-transforms
+
         Note:
             We use the same data augmentation pipeline for CIFAR-100, as the
             images are very similar. Here is an example where they use slightly
             different normalization values, but we ignore this for now:
             https://zhenye-na.github.io/2018/10/07/pytorch-resnet-cifar100.html
+
         Args:
             apply_rand_hflips (bool): Apply random horizontal flips during
                 training.
@@ -420,8 +468,10 @@ class CIFAR10Data(Dataset):
             cutout_n_holes (int): If ``apply_cutout`` is ``True``, then this
                 will be passed as constructor argument ``n_holes`` to class
                 :class:`utils.torch_utils.CutoutTransform`.
+
         Returns:
             (tuple): Tuple containing:
+
                 - **train_transform**: A transforms pipeline that applies random
                   transformations and normalizes the image.
                 - **test_transform**: Similar to train_transform, but no random
@@ -466,12 +516,14 @@ class CIFAR10Data(Dataset):
     @staticmethod
     def torch_augment_images(x, device, transform, img_shape=[32, 32, 3]):
         """Augment CIFAR-10 images using a given PyTorch transformation.
+
         Args:
             x (numpy.ndarray): A 2D-Numpy array containing CIFAR-10 images.
             device (torch.device or int): The PyTorch device on which the
                 resulting tensor should be.
             transform: A :mod:`torchvision.transforms` method to modify the
                 data.
+
         Returns:
             (torch.Tensor): The augmented images as PyTorch tensor.
         """
@@ -503,3 +555,5 @@ class CIFAR10Data(Dataset):
 
 if __name__ == '__main__':
     pass
+
+

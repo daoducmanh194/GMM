@@ -1,6 +1,28 @@
+#!/usr/bin/env python3
+# Copyright 2019 Christian Henning
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+# @title           :regression1d_data.py
+# @author          :ch
+# @contact         :henningc@ethz.ch
+# @created         :04/10/2019
+# @version         :1.0
+# @python_version  :3.6.8
 """
 1D Regression Dataset
 ^^^^^^^^^^^^^^^^^^^^^
+
 The module :mod:`data.special.regression1d_data` contains a data handler for a
 CL toy regression problem. The user can construct individual datasets with this
 data handler and use each of these datasets to train a model in a continual
@@ -16,6 +38,7 @@ from data.dataset import Dataset
 
 class ToyRegression(Dataset):
     """An instance of this class shall represent a simple regression task.
+
     Attributes:
         train_x_range: The input range for training samples.
         test_x_range: The input range for test samples.
@@ -25,9 +48,11 @@ class ToyRegression(Dataset):
                  test_inter=[-10, 10], num_test=80, val_inter=None,
                  num_val=None, map_function=lambda x : x, std=0, rseed=None):
         """Generate a new dataset.
+
         The input data x will be uniformly drawn for train samples and
         equidistant for test samples. The user has to specify a function that
         will map this random input data onto output samples y.
+
         Args:
             train_inter: A tuple, representing the interval from which x
                 samples are drawn in the training set. Note, this range will
@@ -122,10 +147,12 @@ class ToyRegression(Dataset):
         """Get real function values for equidistant x values in a range that
         covers the test and training data. These values can be used to plot the
         ground truth function.
+
         Args:
             num_samples: Number of samples to be produced.
             x_range: If a specific range should be used to gather function
                 values.
+
         Returns:
             x, y: Two numpy arrays containing the corresponding x and y values.
         """
@@ -149,6 +176,7 @@ class ToyRegression(Dataset):
 
     def plot_dataset(self, show=True):
         """Plot the whole dataset.
+
         Args:
             show: Whether the plot should be shown.
         """
@@ -186,6 +214,7 @@ class ToyRegression(Dataset):
     def plot_predictions(self, predictions, label='Pred', show_train=True,
                          show_test=True):
         """Plot the dataset as well as predictions.
+
         Args:
             predictions: A tuple of x and y values, where the y values are
                          computed by a trained regression network.
@@ -222,8 +251,10 @@ class ToyRegression(Dataset):
                      num_samples_per_row=4, show=True, filename=None,
                      interactive=False, figsize=(10, 6)):
         """Plot samples belonging to this dataset.
+
         Note:
             Either ``outputs`` or ``predictions`` must be not ``None``!
+
         Args:
             title: The title of the whole figure.
             inputs: A 2D numpy array, where each row is an input sample.
@@ -283,6 +314,7 @@ class ToyRegression(Dataset):
                       fun_xranges=None, show=True, filename=None,
                       figsize=(10, 6), publication_style=False):
         """Plot several datasets of this class in one plot.
+
         Args:
             data_handlers: A list of ToyRegression objects.
             inputs (optional): A list of numpy arrays representing inputs for
@@ -380,3 +412,5 @@ class ToyRegression(Dataset):
 
 if __name__ == '__main__':
     pass
+
+

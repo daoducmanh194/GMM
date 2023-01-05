@@ -1,6 +1,28 @@
+#!/usr/bin/env python3
+# Copyright 2019 Johannes von Oswald
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+# @title           :split_cifar.py
+# @author          :jvo
+# @contact         :oswald@ini.ethz.ch
+# @created         :05/13/2019
+# @version         :1.0
+# @python_version  :3.7.3
 """
 Split CIFAR-10/100 Dataset
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
 The module :mod:`data.special.split_cifar` contains a wrapper for data handlers
 for the Split-CIFAR10/CIFAR100 task.
 """
@@ -25,9 +47,11 @@ def get_split_cifar_handlers(data_path, use_one_hot=True, validation_size=0,
     """This method will combine 1 object of the class
     :class:`data.cifar10_data.CIFAR10Data` and 5 objects of the class
     :class:`SplitCIFAR100Data`.
+
     The SplitCIFAR benchmark consists of 6 tasks, corresponding to the images
     in CIFAR-10 and 5 tasks from CIFAR-100 corresponding to the images with
     labels [0-10], [10-20], [20-30], [30-40], [40-50].
+
     Args:
         data_path: Where should the CIFAR-10 and CIFAR-100 datasets
             be read from? If not existing, the datasets will be downloaded
@@ -45,12 +69,14 @@ def get_split_cifar_handlers(data_path, use_one_hot=True, validation_size=0,
         num_classes_per_task (int): Number of classes to put into one data
             handler. For example, if ``2``, then every data handler will include
             2 digits.
+
             If ``10``, then the first dataset will simply be CIFAR-10.
         num_tasks (int): A number between 1 and 11 (assuming
             ``num_classes_per_task == 10``), specifying the number of data
             handlers to be returned. If ``num_tasks=6``, then there will be
             the CIFAR-10 data handler and the first 5 splits of the CIFAR-100
             dataset (as in the usual CIFAR benchmark for CL).
+
     Returns:
         (list) A list of data handlers. The first being an instance of class
         :class:`data.cifar10_data.CIFAR10Data` and the remaining ones being an
@@ -107,6 +133,7 @@ def get_split_cifar_handlers(data_path, use_one_hot=True, validation_size=0,
 
 class SplitCIFAR100Data(CIFAR100Data):
     """An instance of the class shall represent a single SplitCIFAR-100 task.
+
     Args:
         data_path: Where should the dataset be read from? If not existing,
             the dataset will be downloaded into this folder.
@@ -143,10 +170,13 @@ class SplitCIFAR100Data(CIFAR100Data):
     def transform_outputs(self, outputs):
         """Transform the outputs from the 100D CIFAR100 dataset into proper
         labels based on the constructor argument ``labels``.
+
         See :meth:`data.special.split_mnist.SplitMNIST.transform_outputs` for
         more information.
+
         Args:
             outputs: 2D numpy array of outputs.
+
         Returns:
             2D numpy array of transformed outputs.
         """
@@ -158,8 +188,10 @@ class SplitCIFAR100Data(CIFAR100Data):
 
 class SplitCIFAR10Data(CIFAR10Data):
     """An instance of the class shall represent a single SplitCIFAR-10 task.
+
     Each instance will contain only samples of CIFAR-10 belonging to a subset
     of the labels.
+
     Args:
         (....): See docstring of class :class:`SplitCIFAR100Data`.
     """
@@ -177,10 +209,13 @@ class SplitCIFAR10Data(CIFAR10Data):
     def transform_outputs(self, outputs):
         """Transform the outputs from the 10D CIFAR10 dataset into proper labels
         based on the constructor argument ``labels``.
+
         See :meth:`data.special.split_mnist.SplitMNIST.transform_outputs` for
         more information.
+
         Args:
             outputs (numpy.ndarray): 2D numpy array of outputs.
+
         Returns:
             (numpy.ndarray): 2D numpy array of transformed outputs.
         """
@@ -193,6 +228,7 @@ class SplitCIFAR10Data(CIFAR10Data):
 def _split_cifar_object(data, data_path, use_one_hot, validation_size,
                         use_data_augmentation, labels, full_out_dim):
     """Extract a subset of labels from a CIFAR-10 or CIFAR-100 dataset.
+
     The constructors of classes :class:`SplitCIFAR10Data` and
     :class:`SplitCIFAR100Data` are essentially identical. Therefore, the code
     is realized in this function.
@@ -319,6 +355,7 @@ def _split_cifar_object(data, data_path, use_one_hot, validation_size,
 def _transform_split_outputs(data, outputs):
     """Actual implementation of method ``transform_outputs`` for split dataset
     handlers.
+
     Args:
         data: Data handler.
         outputs (numpy.ndarray): See docstring of method
@@ -348,3 +385,5 @@ def _transform_split_outputs(data, outputs):
 
 if __name__ == '__main__':
     pass
+
+

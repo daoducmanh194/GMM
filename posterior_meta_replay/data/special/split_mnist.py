@@ -1,11 +1,34 @@
+#!/usr/bin/env python3
+# Copyright 2019 Christian Henning
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+# @title           :split_mnist.py
+# @author          :ch
+# @contact         :henningc@ethz.ch
+# @created         :04/11/2019
+# @version         :1.0
+# @python_version  :3.6.7
 """
 Split MNIST Dataset
 ^^^^^^^^^^^^^^^^^^^
+
 The module :mod:`data.special.split_mnist` contains a wrapper for data
 handlers for the SplitMNIST task.
 """
 import numpy as np
 from warnings import warn
+
 from data.mnist_data import MNISTData
 from data.special.split_cifar import _transform_split_outputs
 
@@ -13,10 +36,13 @@ def get_split_MNIST_handlers(data_path, use_one_hot=True, validation_size=0,
                              steps=2):
     """This function instantiates 5 objects of the class :class:`SplitMNIST`
     which will contain a disjoint set of labels.
+
     The SplitMNIST task consists of 5 tasks corresponding to the images with
     labels [0,1], [2,3], [4,5], [6,7], [8,9].
+
     .. deprecated:: 1.0
         Please use function :func:`get_split_mnist_handlers` instead.
+
     Args:
         data_path: Where should the MNIST dataset be read from? If not existing,
             the dataset will be downloaded into this folder.
@@ -26,6 +52,7 @@ def get_split_MNIST_handlers(data_path, use_one_hot=True, validation_size=0,
             data handler.
         steps: Number of classes to put into one data handler. If default
             every data handler will include 2 digits, otherwise 1.
+
     Returns:
         (list): A list of data handlers, each corresponding to a
         :class:`SplitMNIST` object.
@@ -43,8 +70,10 @@ def get_split_mnist_handlers(data_path, use_one_hot=True, validation_size=0,
                              trgt_padding=None):
     """This function instantiates 5 objects of the class :class:`SplitMNIST`
     which will contain a disjoint set of labels.
+
     The SplitMNIST task consists of 5 tasks corresponding to the images with
     labels [0,1], [2,3], [4,5], [6,7], [8,9].
+
     Args:
         data_path: Where should the MNIST dataset be read from? If not existing,
             the dataset will be downloaded into this folder.
@@ -60,6 +89,7 @@ def get_split_mnist_handlers(data_path, use_one_hot=True, validation_size=0,
             returned by this function.
         trgt_padding (int, optional): See docstring of class
             :class:`SplitMNIST`.
+
     Returns:
         (list): A list of data handlers, each corresponding to a
         :class:`SplitMNIST` object.
@@ -92,6 +122,7 @@ def get_split_mnist_handlers(data_path, use_one_hot=True, validation_size=0,
 
 class SplitMNIST(MNISTData):
     """An instance of the class shall represent a SplitMNIST task.
+
     Args:
         data_path (str): Where should the dataset be read from? If not existing,
             the dataset will be downloaded into this folder.
@@ -230,13 +261,19 @@ class SplitMNIST(MNISTData):
     def transform_outputs(self, outputs):
         """Transform the outputs from the 10D MNIST dataset into proper labels
         based on the constructor argument ``labels``.
+
         I.e., the output will have ``len(labels)`` classes.
+
         Example:
             Split with labels [2,3]
+
             1-hot encodings: [0,0,0,1,0,0,0,0,0,0] -> [0,1]
+
             labels: 3 -> 1
+
         Args:
             outputs: 2D numpy array of outputs.
+
         Returns:
             2D numpy array of transformed outputs.
         """

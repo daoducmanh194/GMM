@@ -1,11 +1,36 @@
+#!/usr/bin/env python3
+# Copyright 2020 Christian Henning
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+# @title          :data/fashion_mnist.py
+# @author         :ch
+# @contact        :henningc@ethz.ch
+# @created        :04/08/2020
+# @version        :1.0
+# @python_version :3.6.10
 """
 Fashion-MNIST Dataset
 ---------------------
+
 The module :mod:`data.fashion_mnist` contains a handler for the
 `Fashion-MNIST <https://github.com/zalandoresearch/fashion-mnist>`__ dataset.
+
 The dataset was introduced in:
+
     Xiao et al., `Fashion-MNIST: a Novel Image Dataset for Benchmarking \
 Machine Learning Algorithms <https://arxiv.org/abs/1708.07747>`__, 2017.
+
 This module contains a simple wrapper from the corresponding
 `torchvision dataset <https://pytorch.org/docs/master/torchvision/datasets.\
 html#fashion-mnist>`__ to our dataset interface :class:`data.dataset.Dataset`.
@@ -20,8 +45,10 @@ from data.mnist_data import MNISTData
 
 class FashionMNISTData(Dataset):
     """An instance of the class shall represent the Fashion-MNIST dataset.
+
     Note:
         By default, input samples are provided in a range of ``[0, 1]``.
+
     Args:
         data_path (str): Where should the dataset be read from? If not existing,
             the dataset will be downloaded into this folder.
@@ -32,9 +59,11 @@ class FashionMNISTData(Dataset):
             samples).
         use_torch_augmentation (bool): Apply data augmentation to inputs when
             calling method :meth:`data.dataset.Dataset.input_to_torch_tensor`.
+
             The augmentation will be identical to the one provided by class
             :class:`data.mnist_data.MNISTData`, **except** that during training
             also random horizontal flips are applied.
+
             Note:
                 If activated, the statistics of test samples are changed as
                 a normalization is applied.
@@ -111,14 +140,18 @@ class FashionMNISTData(Dataset):
                               force_no_preprocessing=False, sample_ids=None):
         """This method can be used to map the internal numpy arrays to PyTorch
         tensors.
+
         Note, this method has been overwritten from the base class.
+
         If enabled via constructor option ``use_torch_augmentation``, input
         images are preprocessed.
         Preprocessing involves normalization and (for training mode) random
         perturbations.
+
         Args:
             (....): See docstring of method
                 :meth:`data.dataset.Dataset.input_to_torch_tensor`.
+
         Returns:
             (torch.Tensor): The given input ``x`` as PyTorch tensor.
         """
@@ -186,6 +219,7 @@ class FashionMNISTData(Dataset):
     def _plot_config(self, inputs, outputs=None, predictions=None):
         """Re-Implementation of method
         :meth:`data.dataset.Dataset._plot_config`.
+
         This method has been overriden to ensure, that there are 2 subplots,
         in case the predictions are given.
         """
@@ -205,3 +239,5 @@ class FashionMNISTData(Dataset):
 
 if __name__ == '__main__':
     pass
+
+
