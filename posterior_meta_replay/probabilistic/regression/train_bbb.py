@@ -487,7 +487,7 @@ def train(task_id, data, mnet, hnet, device, config, shared, logger, writer):
         task_id: The index of the task on which we train.
         data: The dataset handler.
         mnet: The model of the main network.
-        hnet: The model of the hyoer network. May be ``None``.
+        hnet: The model of the hyper network. May be ``None``.
         device: Torch device (cpu or gpu).
         config: The command line arguments.
         shared: Miscellaneous data shared among training functions.

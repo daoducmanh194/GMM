@@ -490,5 +490,14 @@ def kl_mixture_gauss(distribution_a, distribution_b, gauss_mixture=3, lamb=1):
         kl += torch.sum(coff_a[i] * compute_kl(mean_a[i], var_a[i], mean_b[i], var_b[i], sum=False, lamb=lamb))
     return kl
 
+def sample_gauss(mean, rho, coef, gauss_mixture, K, din, dout, is_bias,
+                logvar_enc=False, generator=None, is_radial=False):
+    assert len(mean) == len(rho) and len(mean) == len(coef)
+    sample = []
+    device = mean[0].device if len(mean) >  0 else None
+    
+
+    return sample
+
 if __name__ == '__main__':
     pass
