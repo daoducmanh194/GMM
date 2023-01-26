@@ -23,10 +23,12 @@
 Helper functions when working with Bayesian Neural Networks
 -----------------------------------------------------------
 """
+import numpy as np
 import torch
 from torch.distributions import Normal
 import torch.nn.functional as F
 from warnings import warn
+
 
 def decode_and_sample_diag_gauss(mean, rho, logvar_enc=False, generator=None,
                                  is_radial=False):
@@ -82,7 +84,7 @@ def decode_and_sample_diag_gauss(mean, rho, logvar_enc=False, generator=None,
         (list): A sample from the desired distribution, retrieved via the
         reparametrization trick.
     """
-    assert(len(mean) == len(rho))
+    assert (len(mean) == len(rho))
 
     sample = []
     device = mean[0].device if len(mean) > 0 else None
@@ -101,6 +103,7 @@ def decode_and_sample_diag_gauss(mean, rho, logvar_enc=False, generator=None,
             sample.append(mean[i] + std * r * eps / torch.norm(eps, p=2))
 
     return sample
+
 
 def decode_diag_gauss(rho, logvar_enc=False, return_var=False,
                       return_logvar=False):
@@ -144,7 +147,7 @@ def decode_diag_gauss(rho, logvar_enc=False, return_var=False,
         ret_logvar.append(logvar)
 
         if return_var:
-            ret_var.append(std**2)
+            ret_var.append(std ** 2)
 
     if return_var and return_logvar:
         return ret_std, ret_var, ret_logvar
@@ -154,6 +157,7 @@ def decode_diag_gauss(rho, logvar_enc=False, return_var=False,
         return ret_std, ret_logvar
 
     return ret_std
+
 
 def sample_diag_gauss(mean, std, generator=None, is_radial=False):
     """Get a sample from a multivariate Gaussian distribution with diagonal
@@ -191,9 +195,10 @@ def sample_diag_gauss(mean, std, generator=None, is_radial=False):
         else:
             r = torch.normal(torch.tensor(0.).to(device), 1., \
                              generator=generator)
-            sample.append(m +  std[i] * r * eps / torch.norm(eps, p=2))
+            sample.append(m + std[i] * r * eps / torch.norm(eps, p=2))
 
     return sample
+
 
 def kl_diag_gaussians(mean_a, logvar_a, mean_b, logvar_b):
     r"""Compute the KL divergence between 2 diagonal Gaussian distributions.
@@ -219,10 +224,11 @@ def kl_diag_gaussians(mean_a, logvar_a, mean_b, logvar_b):
 
     ### Using our own implementation ###
     kl = 0.5 * torch.sum(-1 + \
-        (logvar_a_flat.exp() + (mean_b_flat - mean_a_flat).pow(2)) / \
-        logvar_b_flat.exp() + logvar_b_flat - logvar_a_flat)
+                         (logvar_a_flat.exp() + (mean_b_flat - mean_a_flat).pow(2)) / \
+                         logvar_b_flat.exp() + logvar_b_flat - logvar_a_flat)
 
     return kl
+
 
 def kl_diag_gauss_with_standard_gauss(mean, logvar):
     """Compute the KL divergence between an arbitrary diagonal Gaussian
@@ -242,6 +248,7 @@ def kl_diag_gauss_with_standard_gauss(mean, logvar):
     var_flat = logvar_flat.exp()
 
     return -0.5 * torch.sum(1 + logvar_flat - mean_flat.pow(2) - var_flat)
+
 
 def square_wasserstein_2(mean_a, logvar_a, mean_b, logvar_b):
     r"""Compute the square of the Wasserstein-2 distance between 2 diagonal 
@@ -264,10 +271,11 @@ def square_wasserstein_2(mean_a, logvar_a, mean_b, logvar_b):
     mean_b_flat = torch.cat([t.view(-1) for t in mean_b])
     var_b_flat = torch.cat([t.view(-1) for t in logvar_b]).exp()
 
-    square_wasserstein = torch.norm((mean_a_flat - mean_b_flat), p=2)**2 + \
-        (var_a_flat + var_b_flat - 2*torch.sqrt(var_a_flat*var_b_flat)).sum()
+    square_wasserstein = torch.norm((mean_a_flat - mean_b_flat), p=2) ** 2 + \
+                         (var_a_flat + var_b_flat - 2 * torch.sqrt(var_a_flat * var_b_flat)).sum()
 
     return square_wasserstein
+
 
 def kl_radial_bnn_with_diag_gauss(mean_a, std_a, mean_b, std_b,
                                   ce_sample_size=10, generator=None):
@@ -349,6 +357,7 @@ def kl_radial_bnn_with_diag_gauss(mean_a, std_a, mean_b, std_b,
 
     return entropy - cross_entropy
 
+
 def sample_diag_gaus_from_hnet(hnet_outputs):
     """This method uses the reparametrization trick to sample a set of main
     network weights assuming the output of the hypernetwork represents the
@@ -372,11 +381,11 @@ def sample_diag_gaus_from_hnet(hnet_outputs):
         A sample of the distribution represented by the hypernet output.
     """
     warn('Please use a main network wrapper such as class' +
-        '"probabilistic.gauss_mnet_interface.GaussianBNNWrapper" or the' +
-        'function "decode_and_sample_diag_gauss" rather than working with ' +
-        'the hypernet output directly.', DeprecationWarning)
+         '"probabilistic.gauss_mnet_interface.GaussianBNNWrapper" or the' +
+         'function "decode_and_sample_diag_gauss" rather than working with ' +
+         'the hypernet output directly.', DeprecationWarning)
 
-    assert(len(hnet_outputs) % 2 == 0)
+    assert (len(hnet_outputs) % 2 == 0)
     n = len(hnet_outputs) // 2
 
     mu = hnet_outputs[n:]
@@ -388,6 +397,7 @@ def sample_diag_gaus_from_hnet(hnet_outputs):
         sample.append(Normal(mu[i], std).rsample())
 
     return sample
+
 
 def extract_mean_std(hnet_outputs, return_logvar=False):
     """Extract mean and standard deviation for a multivariate Gaussian
@@ -409,11 +419,11 @@ def extract_mean_std(hnet_outputs, return_logvar=False):
         Two lists of tensors: `mean` and `std`.
     """
     warn('Please use a main network wrapper such as class' +
-        '"probabilistic.gauss_mnet_interface.GaussianBNNWrapper" or the' +
-        'function "decode_diag_gauss" rather than working with ' +
-        'the hypernet output directly.', DeprecationWarning)
+         '"probabilistic.gauss_mnet_interface.GaussianBNNWrapper" or the' +
+         'function "decode_diag_gauss" rather than working with ' +
+         'the hypernet output directly.', DeprecationWarning)
 
-    assert(len(hnet_outputs) % 2 == 0)
+    assert (len(hnet_outputs) % 2 == 0)
     n = len(hnet_outputs) // 2
 
     mean = hnet_outputs[n:]
@@ -423,6 +433,7 @@ def extract_mean_std(hnet_outputs, return_logvar=False):
     if return_logvar:
         return mean, std, logvar
     return mean, std
+
 
 def sample_gumbel_softmax(x, tau=1.0):
     r"""Sample a Gaussian sample following Gumbel Sample method.
@@ -439,6 +450,7 @@ def sample_gumbel_softmax(x, tau=1.0):
     gumbel_sample = -torch.log(-torch.log(uniform_sample + eps) + eps)
     gumbel_softmax = F.softmax(1.0 / tau * (torch.log(F.softmax(x, dim=0)) + gumbel_sample), dim=0)
     return gumbel_softmax
+
 
 def compute_kl(mean, exp_var, prior_mean, prior_exp_var, sum=True, lamb=1, initial_prior_var=0.0):
     r"""Compute KL distance between 2 distributions
@@ -458,8 +470,8 @@ def compute_kl(mean, exp_var, prior_mean, prior_exp_var, sum=True, lamb=1, initi
     trace_term = torch.exp(exp_var - prior_exp_var)
     if lamb != 1:
         mean_term = (mean - prior_mean) ** 2 * (
-                    lamb * torch.clamp(torch.exp(-prior_exp_var) - (1.0 / np.exp(1.0 * initial_prior_var)), min=0.0) + (
-                        1.0 / np.exp(1.0 * initial_prior_var)))
+                lamb * torch.clamp(torch.exp(-prior_exp_var) - (1.0 / np.exp(1.0 * initial_prior_var)), min=0.0) + (
+                1.0 / np.exp(1.0 * initial_prior_var)))
     else:
         mean_term = (mean - prior_mean) ** 2 * torch.exp(-prior_exp_var)
     det_term = prior_exp_var - exp_var
@@ -468,6 +480,7 @@ def compute_kl(mean, exp_var, prior_mean, prior_exp_var, sum=True, lamb=1, initi
         return 0.5 * torch.sum(trace_term + mean_term + det_term - 1)
     else:
         return 0.5 * (trace_term + mean_term + det_term - 1)
+
 
 def kl_mixture_gauss(distribution_a, distribution_b, gauss_mixture=3, lamb=1):
     r""" Computing KL distance between 2 distributions in Gaussian Mixture case
@@ -490,14 +503,49 @@ def kl_mixture_gauss(distribution_a, distribution_b, gauss_mixture=3, lamb=1):
         kl += torch.sum(coff_a[i] * compute_kl(mean_a[i], var_a[i], mean_b[i], var_b[i], sum=False, lamb=lamb))
     return kl
 
-def sample_gauss(mean, rho, coef, gauss_mixture, K, din, dout, is_bias,
-                logvar_enc=False, generator=None, is_radial=False):
+
+def sample_gauss(mean, rho, logvar_enc, coef, gauss_mixture, K,
+                 d_in, d_out, is_bias, generator, is_radial):
     assert len(mean) == len(rho) and len(mean) == len(coef)
     sample = []
-    device = mean[0].device if len(mean) >  0 else None
-    
+    device = mean[0].device if len(mean) > 0 else None
+    for i in range(len(mean)):
+        if logvar_enc:
+            std = torch.exp(0.5 * rho[i])
+        else:
+            std = F.softplus(rho[i])
+
+        if not is_bias:
+            eps = torch.normal(torch.zeros_like(std), 1., generator=generator)
+        else:
+            eps = torch.normal(torch.zeros_like(std), 1., generator=generator)
+
+        if not is_radial:
+            sample.append(mean[i] + eps * std)
+        else:
+            r = torch.normal(torch.tensor(0.).to(device), 1.,
+                             generator=generator)
+            sample.append(mean[i] + std * r * eps / torch.norm(eps, p=2))
 
     return sample
+
+
+def sample_gumbel(mean, rho, logvar_enc, coef, gauss_mixture, K,
+                  d_in, d_out, is_bias, generator, is_radial):
+    pass
+
+
+def sample_from_gumbel_softmax_trick(mean, rho, logvar_enc=False, coef, tau,
+                                     gauss_mixture, K, d_in, d_out, is_bias,
+                                     generator=None, is_radial=False):
+    # List K Gaussian Mixture contains list weight sample
+    sample_gauss = sample_gauss(mean, rho, logvar_enc, coef, gauss_mixture, K,
+                                d_in, d_out, is_bias, generator, is_radial)
+    sample_gumbel = sample_gumbel(mean, rho, logvar_enc, coef, gauss_mixture, K,
+                                  d_in, d_out, is_bias, generator, is_radial)
+    sample = torch.sum(torch.multiply(sample_gauss, sample_gumbel), 1)
+    return sample
+
 
 if __name__ == '__main__':
     pass

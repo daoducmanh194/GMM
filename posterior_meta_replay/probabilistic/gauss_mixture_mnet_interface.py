@@ -18,6 +18,7 @@ from mnets.mnet_interface import MainNetInterface
 from probabilistic import prob_utils as putils
 from probabilistic.gauss_mlp import GaussianMLP
 
+
 class GaussianMixtureBNNWrapper(nn.Module, MainNetInterface):
     r"""Convert Main Network into BNN with Gaussian Mixture weight distribution.
 
@@ -117,8 +118,9 @@ class GaussianMixtureBNNWrapper(nn.Module, MainNetInterface):
     .. _BbB example code:
         https://github.com/JavierAntoran/Bayesian-Neural-Networks/blob/master/src/Bayes_By_Backprop/model.py#L38
     """
+
     def __init__(self, mnet, no_mean_reinit=False, logvar_encoding=False,
-                apply_rho_offset=False, is_radial=False, gauss_mixture=3):
+                 apply_rho_offset=False, is_radial=False, gauss_mixture=3):
         nn.Module.__init__(self)
         MainNetInterface.__init__(self)
 
@@ -128,10 +130,10 @@ class GaussianMixtureBNNWrapper(nn.Module, MainNetInterface):
 
         if is_radial:
             print('Converting network into BNN with radial weight ' +
-                'distribution ...')
+                  'distribution ...')
         else:
             print('Converting network into BNN with diagonal Gaussian weight ' +
-                'distribution ...')
+                  'distribution ...')
 
         self._mnet = mnet
         self._logvar_encoding = logvar_encoding
@@ -141,35 +143,41 @@ class GaussianMixtureBNNWrapper(nn.Module, MainNetInterface):
         self._gauss_mixture = gauss_mixture
 
         # Take over attributes of 'mnet' and modify them if necessary
-        self._mean_params = None
-        self._rho_params = None
-        self._coef_params = None
+        self._mean_params = []
+        self._rho_params = []
+        self._coef_params = []
         if mnet.internal_params is not None:
-            self._mean_params = mnet.internal_params
-            self._rho_params = nn.ParameterList()
-            self._coef_params = nn.ParameterList()
+            for gauss in range(self._gauss_mixture):
+                mean = None
+                rho = None
+                coef = None
+                mean = mnet.internal_params
+                rho = nn.ParameterList()
+                coef = nn.ParameterList()
 
-            for p in self._mean_params:
-                self._rho_params.append(nn.Parameter(torch.Tensor(p.sizse()),
-                                                    requires_grad=True))
-                self._coef_params.append(nn.Parameter(torch.Tensor(p.zise()), 
-                                                    requires_grad=True))
+                for p in mean:
+                    rho.append(nn.Parameter(torch.Tensor(p.zise()),
+                                            requires_grad=True))
+                    coef.append(nn.Parameter(torch.Tensor(p.size()),
+                                             requires_grad=True))
 
-            # Initialize weights
-            if not no_mean_reinit:
-                for p in self._mean_params:
-                    p.data.uniform(-0.1, 0.1)
+                # Initialize each weights of Gauss Mixture
+                if not no_mean_reinit:
+                    for p in mean:
+                        p.data.uniform_(-0.1, 0.1)
 
-            for p in self._rho_params:
-                if apply_rho_offset:
-                    # subtract 2.5 from 'rho' in the forward mehthod
-                    # p.data.uniform(-0.5, 0.5)
-                    p.data.uniform(-3-self._rho_offset, -2-self._rho_offset)
-                else:
-                    p.data.uniform(-3, -2)
-            
-            for p in self._coef_params:
-                p.data.uniform(0, 1)
+                for p in rho:
+                    if apply_rho_offset:
+                        p.data.uniform_(-3-self._rho_offset, -2-self._rho_offset)
+                    else:
+                        p.data.uniform(-3, -2)
+
+                for p in coef:
+                    p.data.uniform_(-1, 1)
+
+                self._mean_params.append(mean)
+                self._rho_params.append(rho)
+                self._coef_params.append(coef)
 
             self._internal_params = nn.ParameterList()
             for p in self._mean_params:
@@ -181,7 +189,7 @@ class GaussianMixtureBNNWrapper(nn.Module, MainNetInterface):
 
         # Simply duplicate 'param_shapes' and 'hyper_shapes_learned'
         self._param_shapes = mnet.param_shapes + mnet.param_shapes \
-                            + mnet.param_shapes
+                             + mnet.param_shapes
         if mnet._param_shapes_meta is not None:
             self._param_shapes_meta = []
             old_wlen = 0 if self.internal_params is None \
@@ -198,13 +206,13 @@ class GaussianMixtureBNNWrapper(nn.Module, MainNetInterface):
 
             for dd_old in mnet._param_shapes_meta:
                 dd = dict(dd_old)
-                dd['index'] += 2*old_wlen
+                dd['index'] += 2 * old_wlen
                 dd['dist_param'] = 'coef'
                 self._param_shapes_meta.append(dd)
 
         if mnet._hyper_shapes_learned is not None:
             self._hyper_shapes_learned = mnet._hyper_shapes_learned + \
-                mnet._hyper_shapes_learned + mnet._hyper_shapes_learned
+                                         mnet._hyper_shapes_learned + mnet._hyper_shapes_learned
         if mnet._hyper_shapes_learned_ref is not None:
             self._hyper_shapes_learned_ref = \
                 list(mnet._hyper_shapes_learned_ref)
@@ -212,7 +220,7 @@ class GaussianMixtureBNNWrapper(nn.Module, MainNetInterface):
             for ii in mnet._hyper_shapes_learned_ref:
                 self._hyper_shapes_learned_ref.append(ii + old_plen)
             for iii in mnet._hyper_shapes_learned_ref:
-                self._hyper_shapes_learned_ref.append(iii + 2*old_plen)
+                self._hyper_shapes_learned_ref.append(iii + 2 * old_plen)
 
         self._hyper_shapes_distilled = mnet._hyper_shapes_distilled
         if self._hyper_shapes_distilled is not None:
@@ -221,7 +229,7 @@ class GaussianMixtureBNNWrapper(nn.Module, MainNetInterface):
             # inform the user about the fact that we are not considering this
             # attribute as special.
             warn('Class "GaussianMixtureBNNWrapper" doesn\'t modify the ' +
-                'existing attribute "hyper_shapes_distilled".')
+                 'existing attribute "hyper_shapes_distilled".')
 
         self._has_bias = mnet._has_bias
         self._has_fc_out = mnet._has_fc_out
@@ -244,7 +252,7 @@ class GaussianMixtureBNNWrapper(nn.Module, MainNetInterface):
              '"layer_weight_tensors", such that the contained weights only ' +
              'represent mean parameters.')
 
-        #return super(MainNetInterface, self).layer_weight_tensors
+        # return super(MainNetInterface, self).layer_weight_tensors
         return super().layer_weight_tensors
 
     @property
@@ -259,7 +267,7 @@ class GaussianMixtureBNNWrapper(nn.Module, MainNetInterface):
              '"layer_bias_vectors", such that the contained weights only ' +
              'represent mean parameters.')
 
-        #return super(MainNetInterface, self).layer_bias_vectors
+        # return super(MainNetInterface, self).layer_bias_vectors
         return super().layer_bias_vectors
 
     @property
@@ -273,11 +281,11 @@ class GaussianMixtureBNNWrapper(nn.Module, MainNetInterface):
             normalization is used.
         """
         # FIXME 
-        #warn('Class "GaussianBNNWrapper" didn\'t modify the attribute ' +
+        # warn('Class "GaussianBNNWrapper" didn\'t modify the attribute ' +
         #     '"batchnorm_layers", such that the contained weights only ' +
         #     'represent mean parameters.')
 
-        #return super(MainNetInterface, self).batchnorm_layers
+        # return super(MainNetInterface, self).batchnorm_layers
         return super().batchnorm_layers
 
     @property
@@ -294,7 +302,7 @@ class GaussianMixtureBNNWrapper(nn.Module, MainNetInterface):
              '"context_mod_layers", such that the contained weights only ' +
              'represent mean parameters.')
 
-        #return super(MainNetInterface, self).context_mod_layers
+        # return super(MainNetInterface, self).context_mod_layers
         return super().context_mod_layers
 
     @property
@@ -471,23 +479,23 @@ class GaussianMixtureBNNWrapper(nn.Module, MainNetInterface):
         """
         # TODO we may wanna add '**kwargs' to the argument list, in case the
         # underlying main network can take more parameters.
-        assert (extracted_mean is None and extracted_rho is None 
+        assert (extracted_mean is None and extracted_rho is None
                 and extracted_coef is None) or \
-                (extracted_mean is not None and extracted_rho is not None
+               (extracted_mean is not None and extracted_rho is not None
                 and extracted_coef is not None)
         if sample is not None and mean_only:
-            assert('Argument "mean_only" is ignored since "sample" is provided')
+            assert ('Argument "mean_only" is ignored since "sample" is provided')
         if sample is not None and extracted_mean is not None:
-            warn('Argument "extracted_mean" is ignored since "sample" is ' + 
-                'provided.')
+            warn('Argument "extracted_mean" is ignored since "sample" is ' +
+                 'provided.')
         if sample is not None and weights is not None:
             warn('Argument "weights" is ignored since "sample" is provided.')
         if extracted_mean is not None and weights is not None:
-            warn('Argument "weights" is ignored since "extracted_mean" is ' + 
-                'provided.')
+            warn('Argument "weights" is ignored since "extracted_mean" is ' +
+                 'provided.')
 
         # The following warning should be obvious.
-        #if rand_state is not None  and (weights is not sample or mean_only):
+        # if rand_state is not None  and (weights is not sample or mean_only):
         #    warn('Argument "rand_state" is ignored since "sample" is ' +
         #         'provided pr "mean_only" was set.')
 
@@ -495,8 +503,8 @@ class GaussianMixtureBNNWrapper(nn.Module, MainNetInterface):
             mean, rho, coef = self.extract_mean_rho_coef(weights=weights)
         elif sample is None:
             assert len(extracted_rho) == len(extracted_mean) and \
-                len(extracted_mean) == len(extracted_rho) and \
-                len(extracted_mean) == len(self._mnet.param_shapes)
+                   len(extracted_mean) == len(extracted_rho) and \
+                   len(extracted_mean) == len(self._mnet.param_shapes)
 
             mean = extracted_mean
             rho = extracted_rho
@@ -504,16 +512,16 @@ class GaussianMixtureBNNWrapper(nn.Module, MainNetInterface):
 
         if isinstance(self._mnet, GaussianMLP) and not disable_lrt:
             if sample is not None:
-                raise ValueError('Local reparametrization trick is used. ' + 
-                                'Hence, activations are samples and a ' + 
-                                'weight "sample" can\'t be utilized.')
+                raise ValueError('Local reparametrization trick is used. ' +
+                                 'Hence, activations are samples and a ' +
+                                 'weight "sample" can\'t be utilized.')
             if ret_sample:
                 raise ValueError('Arguement "ret_sample" is not applicable, ' +
-                                'when using local reparametrization trick.')
+                                 'when using local reparametrization trick.')
 
-            y = self._mnet.forward(x, mean, rho, coef, 
-                    logvar_enc=self._logvar_encoding, mean_only = mean_only,
-                    rand_state=rand_state, **kwargs)
+            y = self._mnet.forward(x, mean, rho, coef,
+                                   logvar_enc=self._logvar_encoding, mean_only=mean_only,
+                                   rand_state=rand_state, **kwargs)
 
         else:
             if sample is not None:
@@ -530,8 +538,8 @@ class GaussianMixtureBNNWrapper(nn.Module, MainNetInterface):
                 y = self._mnet.forward(x, None, None, sample=sample, **kwargs)
             else:
                 y = self._mnet.forward(x, weights=sample,
-                    distilled_params=distilled_params, condition=condition,
-                    **kwargs)
+                                       distilled_params=distilled_params, condition=condition,
+                                       **kwargs)
 
         if ret_sample:
             return y, sample
@@ -567,20 +575,20 @@ class GaussianMixtureBNNWrapper(nn.Module, MainNetInterface):
         """
         if self.internal_params is None:
             raise ValueError('No internal weights. Parameter "weights" ' +
-                            'may not be None.')
+                             'may not be None.')
             mean = self._mean_params
             rho = self._rho_params
             coef = self._coef_params
         else:
             if self.hyper_shapes_learned is not None and \
-                len(self.hyper_shapes_learned) != \
+                    len(self.hyper_shapes_learned) != \
                     len(self.param_shapes) and \
-                        len(weights) == len(self.hyper_shapes_learned):
-                for i,s in enumerate(self.hyper_shapes_learned):
+                    len(weights) == len(self.hyper_shapes_learned):
+                for i, s in enumerate(self.hyper_shapes_learned):
                     assert np.all(np.equal(s, list(weights[i].shape)))
 
-                #mean = self._mean_params
-                #rho = self._rho_params
+                # mean = self._mean_params
+                # rho = self._rho_params
 
                 # FIXME We have the problem, that we don't know how the
                 # underlying `mnet` would reassemble the passed and internal
@@ -596,8 +604,8 @@ class GaussianMixtureBNNWrapper(nn.Module, MainNetInterface):
                 # `rho` parameters and "half" of the passed `weights`
                 # parameter).
                 raise NotImplementedError('Partial passing of weights not ' +
-                    'yet implemented for this class. You either have to pass ' +
-                    'all weights or None.')
+                                          'yet implemented for this class. You either have to pass ' +
+                                          'all weights or None.')
 
             else:
                 assert len(weights) == len(self.param_shapes)
@@ -623,17 +631,17 @@ class GaussianMixtureBNNWrapper(nn.Module, MainNetInterface):
                                                 device=device)
         assert len(ret) == len(self.param_shapes) // 3
         return ret + ret + ret
-    
+
     def sample_weights(self, weights=None, mean_only=False, extracted_mean=None,
-                        extracted_rho=None, extracted_coef=None,
-                        rand_state=None):
+                       extracted_rho=None, extracted_coef=None,
+                       rand_state=None):
         """Sample and return weights from the BNN, e.g. to be reused in a
         call to :meth:`forward`.
 
         Args:
             weights (list, optional): A list of parameters. The list must either
                 comply with the shapes in attribute :attr:`mnets.\
-mnet_interface.MainNetInterface.hyper_shapes_learned`
+                mnet_interface.MainNetInterface.hyper_shapes_learned`
                 or the shapes in attribute
                 :attr:`mnets.mnet_interface.MainNetInterface.param_shapes`.
             mean_only (bool, optional): Rather than drawing random sample, the
@@ -663,14 +671,14 @@ mnet_interface.MainNetInterface.hyper_shapes_learned`
         """
         if extracted_mean is not None and weights is not None:
             warn('Argument "weigts" is ignored since "extracted_mean" is ' +
-                'provided.')
-        
+                 'provided.')
+
         if extracted_mean:
             mean, rho, coef = self.extract_mean_rho_coef(weights=weights)
         else:
             assert len(extracted_mean) == len(extracted_coef) and \
-                len(extracted_mean) == len(extracted_rho) and \
-                len(extracted_mean) == len(self._mnet.param_shapes)
+                   len(extracted_mean) == len(extracted_rho) and \
+                   len(extracted_mean) == len(self._mnet.param_shapes)
 
             mean = extracted_mean
             rho = extracted_rho
@@ -680,8 +688,9 @@ mnet_interface.MainNetInterface.hyper_shapes_learned`
             sample = mean
         else:
             sample = putils.sample_gumbel_softmax(mean, tau=1.0)
-        
+
         return sample
+
 
 if __name__ == '__main__':
     pass

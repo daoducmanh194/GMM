@@ -38,6 +38,7 @@ from mnets.mnet_interface import MainNetInterface
 from probabilistic import prob_utils as putils
 from probabilistic.gauss_mlp import GaussianMLP
 
+
 class GaussianBNNWrapper(nn.Module, MainNetInterface):
     r"""Convert a Main Network into a BNN with Gaussian weight distribution.
 
@@ -131,10 +132,11 @@ class GaussianBNNWrapper(nn.Module, MainNetInterface):
     .. _BbB example code:
         https://github.com/JavierAntoran/Bayesian-Neural-Networks/blob/master/src/Bayes_By_Backprop/model.py#L38
     """
+
     def __init__(self, mnet, no_mean_reinit=False, logvar_encoding=False,
                  apply_rho_offset=False, is_radial=False):
         # FIXME find a way using super to handle multiple inheritance.
-        #super(GaussianBNNWrapper, self).__init__()
+        # super(GaussianBNNWrapper, self).__init__()
         nn.Module.__init__(self)
         MainNetInterface.__init__(self)
 
@@ -142,10 +144,10 @@ class GaussianBNNWrapper(nn.Module, MainNetInterface):
         assert not isinstance(mnet, GaussianBNNWrapper)
 
         if is_radial:
-            print('Converting network into BNN with radial weight '+
+            print('Converting network into BNN with radial weight ' +
                   'distribution ...')
         else:
-            print('Converting network into BNN with diagonal Gaussian weight '+
+            print('Converting network into BNN with diagonal Gaussian weight ' +
                   'distribution ...')
 
         self._mnet = mnet
@@ -173,8 +175,8 @@ class GaussianBNNWrapper(nn.Module, MainNetInterface):
             for p in self._rho_params:
                 if apply_rho_offset:
                     # We will subtract 2.5 from `rho` in the forward method.
-                    #p.data.uniform_(-0.5, 0.5)
-                    p.data.uniform_(-3-self._rho_offset, -2-self._rho_offset)
+                    # p.data.uniform_(-0.5, 0.5)
+                    p.data.uniform_(-3 - self._rho_offset, -2 - self._rho_offset)
                 else:
                     p.data.uniform_(-3, -2)
 
@@ -188,7 +190,7 @@ class GaussianBNNWrapper(nn.Module, MainNetInterface):
         self._param_shapes = mnet.param_shapes + mnet.param_shapes
         if mnet._param_shapes_meta is not None:
             self._param_shapes_meta = []
-            old_wlen = 0  if self.internal_params is None \
+            old_wlen = 0 if self.internal_params is None \
                 else len(mnet.internal_params)
             for dd in mnet._param_shapes_meta:
                 dd['dist_param'] = 'mean'
@@ -202,7 +204,7 @@ class GaussianBNNWrapper(nn.Module, MainNetInterface):
 
         if mnet._hyper_shapes_learned is not None:
             self._hyper_shapes_learned = mnet._hyper_shapes_learned + \
-                mnet._hyper_shapes_learned
+                                         mnet._hyper_shapes_learned
         if mnet._hyper_shapes_learned_ref is not None:
             self._hyper_shapes_learned_ref = \
                 list(mnet._hyper_shapes_learned_ref)
@@ -225,7 +227,7 @@ class GaussianBNNWrapper(nn.Module, MainNetInterface):
         # `hyper_shapes_learned` are belonging to the output layer. But those
         # are only the variance weights. So, we would forget about the mean
         # weights when setting this quantitiy to true.
-        self._mask_fc_out = False #mnet._mask_fc_out
+        self._mask_fc_out = False  # mnet._mask_fc_out
         self._has_linear_out = mnet._has_linear_out
 
         # We don't modify the following attributed, but generate warnings
@@ -249,7 +251,7 @@ class GaussianBNNWrapper(nn.Module, MainNetInterface):
              '"layer_weight_tensors", such that the contained weights only ' +
              'represent mean parameters.')
 
-        #return super(MainNetInterface, self).layer_weight_tensors
+        # return super(MainNetInterface, self).layer_weight_tensors
         return super().layer_weight_tensors
 
     @property
@@ -264,7 +266,7 @@ class GaussianBNNWrapper(nn.Module, MainNetInterface):
              '"layer_bias_vectors", such that the contained weights only ' +
              'represent mean parameters.')
 
-        #return super(MainNetInterface, self).layer_bias_vectors
+        # return super(MainNetInterface, self).layer_bias_vectors
         return super().layer_bias_vectors
 
     @property
@@ -278,11 +280,11 @@ class GaussianBNNWrapper(nn.Module, MainNetInterface):
             normalization is used.
         """
         # FIXME 
-        #warn('Class "GaussianBNNWrapper" didn\'t modify the attribute ' +
+        # warn('Class "GaussianBNNWrapper" didn\'t modify the attribute ' +
         #     '"batchnorm_layers", such that the contained weights only ' +
         #     'represent mean parameters.')
 
-        #return super(MainNetInterface, self).batchnorm_layers
+        # return super(MainNetInterface, self).batchnorm_layers
         return super().batchnorm_layers
 
     @property
@@ -299,7 +301,7 @@ class GaussianBNNWrapper(nn.Module, MainNetInterface):
              '"context_mod_layers", such that the contained weights only ' +
              'represent mean parameters.')
 
-        #return super(MainNetInterface, self).context_mod_layers
+        # return super(MainNetInterface, self).context_mod_layers
         return super().context_mod_layers
 
     @property
@@ -465,21 +467,21 @@ mnet_interface.MainNetInterface.hyper_shapes_learned`
         # TODO we may wanna add `**kwargs` to the argument list, in case the
         # underlying main network can take more parameters.
         assert (extracted_mean is None and extracted_rho is None) or \
-            (extracted_mean is not None and extracted_rho is not None)
+               (extracted_mean is not None and extracted_rho is not None)
 
-        if sample is not None  and mean_only:
+        if sample is not None and mean_only:
             warn('Argument "mean_only" is ignored since "sample" is provided.')
-        if sample is not None  and extracted_mean is not None:
+        if sample is not None and extracted_mean is not None:
             warn('Argument "extracted_mean" is ignored since "sample" is ' +
                  'provided.')
-        if sample is not None  and weights is not None:
+        if sample is not None and weights is not None:
             warn('Argument "weights" is ignored since "sample" is provided.')
-        if extracted_mean is not None  and weights is not None:
+        if extracted_mean is not None and weights is not None:
             warn('Argument "weights" is ignored since "extracted_mean" is ' +
                  'provided.')
 
         # The following warning should be obvious.
-        #if rand_state is not None  and (weights is not sample or mean_only):
+        # if rand_state is not None  and (weights is not sample or mean_only):
         #    warn('Argument "rand_state" is ignored since "sample" is ' +
         #         'provided pr "mean_only" was set.')
 
@@ -487,7 +489,7 @@ mnet_interface.MainNetInterface.hyper_shapes_learned`
             mean, rho = self.extract_mean_and_rho(weights=weights)
         elif sample is None:
             assert len(extracted_mean) == len(extracted_rho) and \
-                len(extracted_mean) == len(self._mnet.param_shapes)
+                   len(extracted_mean) == len(self._mnet.param_shapes)
             # We should additionally assert that all shapes comply with
             # `self._mnet.param_shapes`.
 
@@ -506,29 +508,29 @@ mnet_interface.MainNetInterface.hyper_shapes_learned`
                                  'trick.')
 
             y = self._mnet.forward(x, mean, rho,
-                logvar_enc=self._logvar_encoding, mean_only=mean_only,
-                rand_state=rand_state, **kwargs)
+                                   logvar_enc=self._logvar_encoding, mean_only=mean_only,
+                                   rand_state=rand_state, **kwargs)
 
         else:
 
             if sample is not None:
-                sample = sample # We already have our weight sample.
+                sample = sample  # We already have our weight sample.
             elif mean_only:
                 sample = mean
             else:
                 # TODO might be good to also give the option to the user of
                 # having a different weight sample per sample in the minibatch.
                 sample = putils.decode_and_sample_diag_gauss(mean, rho,
-                    logvar_enc=self._logvar_encoding, generator=rand_state,
-                    is_radial=self._is_radial)
+                                                             logvar_enc=self._logvar_encoding, generator=rand_state,
+                                                             is_radial=self._is_radial)
 
             if isinstance(self._mnet, GaussianMLP):
                 assert disable_lrt
                 y = self._mnet.forward(x, None, None, sample=sample, **kwargs)
             else:
                 y = self._mnet.forward(x, weights=sample,
-                    distilled_params=distilled_params, condition=condition,
-                    **kwargs)
+                                       distilled_params=distilled_params, condition=condition,
+                                       **kwargs)
 
         if ret_sample:
             return y, sample
@@ -569,13 +571,13 @@ mnet_interface.MainNetInterface.hyper_shapes_learned`
         else:
             if self.hyper_shapes_learned is not None and \
                     len(self.hyper_shapes_learned) != \
-                        len(self.param_shapes) and \
+                    len(self.param_shapes) and \
                     len(weights) == len(self.hyper_shapes_learned):
                 for i, s in enumerate(self.hyper_shapes_learned):
                     assert np.all(np.equal(s, list(weights[i].shape)))
 
-                #mean = self._mean_params
-                #rho = self._rho_params
+                # mean = self._mean_params
+                # rho = self._rho_params
 
                 # FIXME We have the problem, that we don't know how the
                 # underlying `mnet` would reassemble the passed and internal
@@ -591,8 +593,8 @@ mnet_interface.MainNetInterface.hyper_shapes_learned`
                 # `rho` parameters and "half" of the passed `weights`
                 # parameter).
                 raise NotImplementedError('Partial passing of weights not ' +
-                    'yet implemented for this class. You either have to pass ' +
-                    'all weights or None.')
+                                          'yet implemented for this class. You either have to pass ' +
+                                          'all weights or None.')
             else:
                 assert len(weights) == len(self.param_shapes)
                 for i, s in enumerate(self.param_shapes):
@@ -677,7 +679,6 @@ mnet_interface.MainNetInterface.hyper_shapes_learned`
 
         return sample
 
+
 if __name__ == '__main__':
     pass
-
-
