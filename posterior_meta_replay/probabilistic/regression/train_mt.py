@@ -31,12 +31,12 @@ import __init__ # pylint: disable=unused-import
 from probabilistic import multitask_args
 from probabilistic import multitask_utils
 
+
 if __name__ == '__main__':
     config = multitask_args.parse_cmd_arguments(mode='regression_mt')
 
     multitask_utils.run(config, experiment='regression_mt')
 
+
 if __name__ == '__main__':
     pass
-
-

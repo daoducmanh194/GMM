@@ -234,5 +234,3 @@ uoguelph-mlrg/Cutout/blob/master/util/cutout.py>`__.
 
 if __name__ == '__main__':
     pass
-
-

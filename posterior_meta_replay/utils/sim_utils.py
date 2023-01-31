@@ -767,5 +767,3 @@ def calc_train_iter(num_train_samples, batch_size, num_iter=-1, epochs=-1):
 
 if __name__ == '__main__':
     pass
-
-
