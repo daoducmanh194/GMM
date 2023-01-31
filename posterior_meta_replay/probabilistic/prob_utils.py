@@ -508,7 +508,7 @@ def sample_gauss(mean, rho, logvar_enc, coef, gauss_mixture, K,
                  d_in, d_out, is_bias, generator, is_radial):
     assert len(mean) == len(rho) and len(mean) == len(coef)
     sample = []
-    device = mean[0].device if len(mean) > 0 else None
+    device = mean[0][0].device if len(mean) > 0 else None
     for i in range(len(mean)):
         if logvar_enc:
             std = torch.exp(0.5 * rho[i])
@@ -516,9 +516,15 @@ def sample_gauss(mean, rho, logvar_enc, coef, gauss_mixture, K,
             std = F.softplus(rho[i])
 
         if not is_bias:
-            eps = torch.normal(torch.zeros_like(std), 1., generator=generator)
+            eps = torch.normal(0.0, 1., size=(K, gauss_mixture, d_in, d_out),
+                               generator=generator)
         else:
-            eps = torch.normal(torch.zeros_like(std), 1., generator=generator)
+            eps = torch.normal(0.0, 1., size=(K, gauss_mixture, 1, d_out),
+                               generator=generator)
+            mean = [torch.unsqueeze(t, 0) for t in mean]
+            std = [torch.unsqueeze(t, 0) for t in std]
+        mean = torch.tile(torch.unsqueeze(mean, 0), [K, 1, 1, 1])
+        std = torch.tile(torch.unsqueeze(std, 0), [K, 1, 1, 1])
 
         if not is_radial:
             sample.append(mean[i] + eps * std)
@@ -530,20 +536,46 @@ def sample_gauss(mean, rho, logvar_enc, coef, gauss_mixture, K,
     return sample
 
 
-def sample_gumbel(mean, rho, logvar_enc, coef, gauss_mixture, K,
+def sample_gumbel(mean, rho, logvar_enc, coef, tau, gauss_mixture, K,
                   d_in, d_out, is_bias, generator, is_radial):
-    pass
+    assert len(mean) == len(rho) and len(mean) == len(coef)
+    sample = []
+    device = mean[0][0].device if len(mean) > 0 else None
+    for i in range(len(mean)):
+        if logvar_enc:
+            std = torch.exp(0.5 * rho[i])
+        else:
+            std = F.softplus(rho[i])
+
+        if not is_bias:
+            zero_term = (K, gauss_mixture, d_in, d_out)
+            coef_expand = torch.tile(torch.unsqueeze(coef, 0), [K, 1, 1, 1])
+        else:
+            zero_term = (K, gauss_mixture, 1, d_out)
+            coef_expand = torch.tile(torch.unsqueeze(
+                torch.unsqueeze(coef, 0), 2), [K, 1, 1, 1])
+
+        eps = 1e-20
+        gumbel_sample = torch.rand(size=zero_term)
+        gumbel_sample = -torch.log(-torch.log(gumbel_sample + eps) + eps)
+        coff_expand_softmax = torch.nn.functional.softmax(coef_expand, dim=1)
+        coff_expand_softmax_gumbel = torch.nn.functional.softmax(
+            1. / tau * (torch.log(coff_expand_softmax) + gumbel_sample), dim=1)
+        return coff_expand_softmax_gumbel
+    
+    return sample
 
 
-def sample_from_gumbel_softmax_trick(mean, rho, logvar_enc=False, coef, tau,
-                                     gauss_mixture, K, d_in, d_out, is_bias,
+def sample_from_gumbel_softmax_trick(mean, rho, coef, tau, gauss_mixture, K,
+                                     d_in, d_out, is_bias, logvar_enc=False,
                                      generator=None, is_radial=False):
     # List K Gaussian Mixture contains list weight sample
-    sample_gauss = sample_gauss(mean, rho, logvar_enc, coef, gauss_mixture, K,
+    gauss_sample = sample_gauss(mean, rho, logvar_enc, coef, gauss_mixture, K,
                                 d_in, d_out, is_bias, generator, is_radial)
-    sample_gumbel = sample_gumbel(mean, rho, logvar_enc, coef, gauss_mixture, K,
+    gumbel_sample = sample_gumbel(mean, rho, logvar_enc, coef, gauss_mixture, K,
                                   d_in, d_out, is_bias, generator, is_radial)
-    sample = torch.sum(torch.multiply(sample_gauss, sample_gumbel), 1)
+    sample = torch.sum(torch.multiply(torch.Tensor(gauss_sample),
+                                      torch.Tensor(gumbel_sample)), 1)
     return sample
 
 

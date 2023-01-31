@@ -41,7 +41,7 @@ previous tasks is prevented by the regularizer proposed in
     https://arxiv.org/abs/1906.00695
 """
 # Do not delete the following import for all executable scripts!
-import __init__ # pylint: disable=unused-import
+import __init__  # pylint: disable=unused-import
 
 from argparse import Namespace
 import numpy as np
@@ -64,6 +64,7 @@ import utils.misc as utils
 import utils.sim_utils as sutils
 import utils.torch_utils as tutils
 
+
 def test(data_handlers, mnet, hnet, device, config, shared, logger, writer,
          hhnet=None, save_fig=True):
     """Test the performance of all tasks.
@@ -79,7 +80,7 @@ def test(data_handlers, mnet, hnet, device, config, shared, logger, writer,
     logger.info('### Testing all trained tasks ... ###')
 
     if hasattr(config, 'mean_only') and config.mean_only:
-         warn('Task inference calculated in test method doesn\'t make any ' +
+        warn('Task inference calculated in test method doesn\'t make any ' +
              'sense, as the deterministic main network has no notion of ' +
              'uncertainty.')
 
@@ -107,7 +108,7 @@ def test(data_handlers, mnet, hnet, device, config, shared, logger, writer,
     with torch.no_grad():
         # We need to keep data for plotting results on all tasks later on.
         val_inputs = []
-        val_targets = [] # Needed to compute MSE values.
+        val_targets = []  # Needed to compute MSE values.
         val_preds_mean = []
         val_preds_std = []
 
@@ -123,7 +124,7 @@ def test(data_handlers, mnet, hnet, device, config, shared, logger, writer,
         if 'ewc' in shared.experiment_type:
             assert hnet is None
             normal_post = ewcutil.build_ewc_posterior(data_handlers, mnet,
-                device, config, shared, logger, writer, n, task_id=n-1)
+                                                      device, config, shared, logger, writer, n, task_id=n - 1)
 
         if config.train_from_scratch and n > 1:
             # We need to iterate over different networks when we want to
@@ -131,11 +132,11 @@ def test(data_handlers, mnet, hnet, device, config, shared, logger, writer,
             # Note, we will always load the corresponding checkpoint of task j
             # before using these networks.
             if 'avb' in shared.experiment_type \
-                    or 'ssge' in shared.experiment_type\
+                    or 'ssge' in shared.experiment_type \
                     or 'ewc' in shared.experiment_type:
                 mnet_other, hnet_other, hhnet_other, _ = \
                     pcutils.generate_networks(config, shared, logger,
-                        shared.all_dhandlers, device, create_dis=False)
+                                              shared.all_dhandlers, device, create_dis=False)
             else:
                 assert hhnet is None
                 hhnet_other = None
@@ -185,7 +186,7 @@ def test(data_handlers, mnet, hnet, device, config, shared, logger, writer,
 
             for j in range(n):
                 ckpt_score_j = None
-                if config.train_from_scratch and j == (n-1):
+                if config.train_from_scratch and j == (n - 1):
                     # Note, the networks trained on dataset (n-1) haven't been
                     # checkpointed yet.
                     mnet_j = task_n_mnet
@@ -194,8 +195,8 @@ def test(data_handlers, mnet, hnet, device, config, shared, logger, writer,
                     normal_post_j = task_n_normal_post
                 elif config.train_from_scratch:
                     ckpt_score_j = pmutils.load_networks(shared, j, device,
-                        logger, mnet_other, hnet_other, hhnet=hhnet_other,
-                        dis=None)
+                                                         logger, mnet_other, hnet_other, hhnet=hhnet_other,
+                                                         dis=None)
                     mnet_j = mnet_other
                     hnet_j = hnet_other
                     hhnet_j = hhnet_other
@@ -211,15 +212,15 @@ def test(data_handlers, mnet, hnet, device, config, shared, logger, writer,
                     normal_post_j = normal_post
 
                 mse_val, val_struct = train_utils.compute_mse(j, data, mnet_j,
-                    hnet_j, device, config, shared, hhnet=hhnet_j,
-                    split_type=split_type, return_dataset=i==j,
-                    return_predictions=True, disable_lrt=disable_lrt_test,
-                    normal_post=normal_post_j)
+                                                              hnet_j, device, config, shared, hhnet=hhnet_j,
+                                                              split_type=split_type, return_dataset=i == j,
+                                                              return_predictions=True, disable_lrt=disable_lrt_test,
+                                                              normal_post=normal_post_j)
 
-                if i == j: # I.e., we used the correct embedding.
+                if i == j:  # I.e., we used the correct embedding.
                     # This sanity check is likely to fail as we don't
                     # deterministically sample the models.
-                    #if ckpt_score_j is not None:
+                    # if ckpt_score_j is not None:
                     #    assert np.allclose(-mse_val, ckpt_score_j)
 
                     val_inputs.append(val_struct.inputs)
@@ -239,10 +240,12 @@ def test(data_handlers, mnet, hnet, device, config, shared, logger, writer,
                     # visualize how uncertainty behaves outside the
                     # in-distribution range.
                     mse_test, test_struct = train_utils.compute_mse(i, data,
-                        mnet_j, hnet_j, device, config, shared, hhnet=hhnet_j,
-                        split_type='test', return_dataset=True,
-                        return_predictions=True, disable_lrt=disable_lrt_test,
-                        normal_post=normal_post_j)
+                                                                    mnet_j, hnet_j, device, config, shared,
+                                                                    hhnet=hhnet_j,
+                                                                    split_type='test', return_dataset=True,
+                                                                    return_predictions=True,
+                                                                    disable_lrt=disable_lrt_test,
+                                                                    normal_post=normal_post_j)
 
                 data_preds[:, :, j] = val_struct.predictions
                 data_preds_mean[:, j] = val_struct.predictions.mean(axis=1)
@@ -269,17 +272,17 @@ def test(data_handlers, mnet, hnet, device, config, shared, logger, writer,
             # Note, this (commented) way of computing the mean does not take
             # into account the variance of the predictive distribution, which is
             # why we don't use it (see docstring of `compute_mse`).
-            #means_of_inferred_preds = data_preds_mean[np.arange( \
+            # means_of_inferred_preds = data_preds_mean[np.arange( \
             #    data_preds_mean.shape[0]), inferred_task_ids]
-            #inferred_val_mse[i] = np.power(means_of_inferred_preds -
+            # inferred_val_mse[i] = np.power(means_of_inferred_preds -
             #                               val_targets[-1].squeeze(), 2).mean()
 
             inferred_preds = data_preds[np.arange(data_preds.shape[0]), :,
-                                        inferred_task_ids]
+                             inferred_task_ids]
             inferred_val_mse[i] = np.power(inferred_preds - \
-                val_targets[-1].squeeze()[:, np.newaxis], 2).mean()
+                                           val_targets[-1].squeeze()[:, np.newaxis], 2).mean()
 
-            logger.debug('Test: Task %d - Mean MSE on %s set using inferred '\
+            logger.debug('Test: Task %d - Mean MSE on %s set using inferred ' \
                          % (i, split_type) + 'embeddings: %f.'
                          % (inferred_val_mse[i]))
             writer.add_scalar('test/task_%d/inferred_val_mse' % i,
@@ -318,7 +321,7 @@ def test(data_handlers, mnet, hnet, device, config, shared, logger, writer,
 
                 W_curr = torch.cat([d.clone().view(-1) for d in w_all])
                 if type(shared.during_weights[i]) == int:
-                    assert(shared.during_weights[i] == -1)
+                    assert (shared.during_weights[i] == -1)
                     shared.during_weights[i] = W_curr
                 else:
                     W_during = shared.during_weights[i]
@@ -352,8 +355,8 @@ def test(data_handlers, mnet, hnet, device, config, shared, logger, writer,
     data_inputs = val_inputs
     mean_preds = val_preds_mean
     data_handlers[0].plot_datasets(data_handlers, data_inputs,
-        mean_preds, fun_xranges=plot_x_ranges, filename=fig_fn,
-        show=False, publication_style=config.publication_style)
+                                   mean_preds, fun_xranges=plot_x_ranges, filename=fig_fn,
+                                   show=False, publication_style=config.publication_style)
     writer.add_figure('test/val_predictions', plt.gcf(), n,
                       close=not config.show_plots)
     if config.show_plots:
@@ -367,11 +370,11 @@ def test(data_handlers, mnet, hnet, device, config, shared, logger, writer,
                          during_mse, save_fig=save_fig)
     additional_plots = {
         'Current Inferred Val MSE': inferred_val_mse,
-        #'Current Test MSE': test_mse
+        # 'Current Test MSE': test_mse
     }
     train_utils.plot_mse(config, writer, n, shared.current_mse[:n],
-        during_mse, baselines=additional_plots, save_fig=False,
-        summary_label='test/mse_detailed')
+                         during_mse, baselines=additional_plots, save_fig=False,
+                         summary_label='test/mse_detailed')
 
     ### Plot predictive distributions over test range for all tasks.
     data_inputs = test_inputs
@@ -379,8 +382,8 @@ def test(data_handlers, mnet, hnet, device, config, shared, logger, writer,
     std_preds = test_preds_std
 
     train_utils.plot_predictive_distributions(config, writer, data_handlers,
-        data_inputs, mean_preds, std_preds, save_fig=save_fig,
-        publication_style=config.publication_style)
+                                              data_inputs, mean_preds, std_preds, save_fig=save_fig,
+                                              publication_style=config.publication_style)
 
     logger.info('Mean task MSE: %f (std: %d)' % (shared.current_mse[:n].mean(),
                                                  shared.current_mse[:n].std()))
@@ -395,7 +398,7 @@ def test(data_handlers, mnet, hnet, device, config, shared, logger, writer,
     s['aa_task_inference'][:n] = task_infer_val_accs.tolist()
     s['aa_task_inference_mean'] = task_infer_val_accs.mean()
 
-    s['aa_mse_during_inferred'][n-1] = inferred_val_mse[n-1]
+    s['aa_mse_during_inferred'][n - 1] = inferred_val_mse[n - 1]
     s['aa_mse_during_inferred_mean'] = np.mean(s['aa_mse_during_inferred'][:n])
     s['aa_mse_final_inferred'] = inferred_val_mse[:n].tolist()
     s['aa_mse_final_inferred_mean'] = inferred_val_mse[:n].mean()
@@ -403,6 +406,7 @@ def test(data_handlers, mnet, hnet, device, config, shared, logger, writer,
     train_utils.save_summary_dict(config, shared)
 
     logger.info('### Testing all trained tasks ... Done ###')
+
 
 def evaluate(task_id, data, mnet, hnet, device, config, shared, logger, writer,
              train_iter=None):
@@ -423,7 +427,7 @@ def evaluate(task_id, data, mnet, hnet, device, config, shared, logger, writer,
     if train_iter is None:
         logger.info('# Evaluating training ...')
     else:
-        logger.info('# Evaluating network on task %d ' % (task_id+1) +
+        logger.info('# Evaluating network on task %d ' % (task_id + 1) +
                     'before running training step %d ...' % (train_iter))
 
     # TODO: write histograms of weight samples to tensorboard.
@@ -442,7 +446,7 @@ def evaluate(task_id, data, mnet, hnet, device, config, shared, logger, writer,
                          'available.')
 
         mse_val, val_struct = train_utils.compute_mse(task_id, data, mnet,
-            hnet, device, config, shared, split_type=split_type)
+                                                      hnet, device, config, shared, split_type=split_type)
         ident = 'training' if split_type == 'train' else 'validation'
 
         logger.info('Eval - Mean MSE on %s set: %f (std: %g).'
@@ -450,15 +454,16 @@ def evaluate(task_id, data, mnet, hnet, device, config, shared, logger, writer,
 
         # In contrast, we visualize uncertainty using the test set.
         mse_test, test_struct = train_utils.compute_mse(task_id, data, mnet,
-            hnet, device, config, shared, split_type='test', return_dataset=True,
-            return_predictions=True)
+                                                        hnet, device, config, shared, split_type='test',
+                                                        return_dataset=True,
+                                                        return_predictions=True)
         logger.debug('Eval - Mean MSE on test set: %f (std: %g).'
                      % (mse_test, test_struct.mse_vals.std()))
 
         if config.show_plots or train_iter is not None:
             train_utils.plot_predictive_distribution(data, test_struct.inputs,
-                test_struct.predictions, show_raw_pred=True, figsize=(10, 4),
-                show=train_iter is None)
+                                                     test_struct.predictions, show_raw_pred=True, figsize=(10, 4),
+                                                     show=train_iter is None)
             if train_iter is not None:
                 writer.add_figure('task_%d/predictions' % task_id, plt.gcf(),
                                   train_iter, close=not config.show_plots)
@@ -471,6 +476,7 @@ def evaluate(task_id, data, mnet, hnet, device, config, shared, logger, writer,
                                   mse_test, train_iter)
 
         logger.info('# Evaluating training ... Done')
+
 
 def train(task_id, data, mnet, hnet, device, config, shared, logger, writer):
     r"""Train the network using the task-specific loss plus a regularizer that
@@ -496,7 +502,7 @@ def train(task_id, data, mnet, hnet, device, config, shared, logger, writer):
     """
     assert isinstance(mnet, GaussianBNNWrapper) or config.mean_only
 
-    logger.info('Training network on task %d ...' % (task_id+1))
+    logger.info('Training network on task %d ...' % (task_id + 1))
 
     mnet.train()
     if hnet is not None:
@@ -512,21 +518,21 @@ def train(task_id, data, mnet, hnet, device, config, shared, logger, writer):
              'outputs means and variances, so it can\'t correctly mask ' +
              'unused output heads.')
         n_y = data.out_shape[0]
-        out_head_inds = [list(range(i*n_y, (i+1)*n_y)) for i in
-                         range(task_id+1)]
+        out_head_inds = [list(range(i * n_y, (i + 1) * n_y)) for i in
+                         range(task_id + 1)]
         # Outputs to be regularized.
         regged_outputs = out_head_inds[:-1]
     allowed_outputs = out_head_inds[task_id] if config.multi_head else None
 
     # Whether the regularizer will be computed during training?
-    calc_reg = hnet is not None  and task_id > 0 and config.beta > 0 and \
-         not config.train_from_scratch
+    calc_reg = hnet is not None and task_id > 0 and config.beta > 0 and \
+               not config.train_from_scratch
 
     # Regularizer targets.
     # Store distributions for each task before training on the current task.
     if calc_reg:
         targets, w_mean_pre, w_logvar_pre = pmutils.calc_reg_target(config,
-            task_id, hnet, mnet=mnet)
+                                                                    task_id, hnet, mnet=mnet)
 
     ### Define Prior
     # Whether prior-matching should even be performed?
@@ -546,10 +552,10 @@ def train(task_id, data, mnet, hnet, device, config, shared, logger, writer):
         if hnet is None:
             hnet_out = None
         else:
-            hnet_out = hnet.forward(cond_id=task_id-1)
+            hnet_out = hnet.forward(cond_id=task_id - 1)
         w_mean_prev, w_rho_prev = mnet.extract_mean_and_rho(weights=hnet_out)
         w_std_prev, w_logvar_prev = putils.decode_diag_gauss(w_rho_prev, \
-            logvar_enc=mnet.logvar_encoding, return_logvar=True)
+                                                             logvar_enc=mnet.logvar_encoding, return_logvar=True)
 
         prior_mean = [p.detach().clone() for p in w_mean_prev]
         prior_logvar = [p.detach().clone() for p in w_logvar_prev]
@@ -562,15 +568,15 @@ def train(task_id, data, mnet, hnet, device, config, shared, logger, writer):
         # Note, in principle this step is not necessary, as those task-specific
         # weights have been only pulled to the prior when learning the prior
         # tasks.
-        if config.multi_head: # FIXME A bit hacky :D
+        if config.multi_head:  # FIXME A bit hacky :D
             # Output head weight masks for all previous tasks
             out_masks = [mnet._mnet.get_output_weight_mask( \
-                         out_inds=regged_outputs[i], device=device) \
-                         for i in range(task_id)]
+                out_inds=regged_outputs[i], device=device) \
+                for i in range(task_id)]
             for ii, mask in enumerate(out_masks[0]):
-                if mask is None: # Shared parameter.
+                if mask is None:  # Shared parameter.
                     continue
-                else: # Output weight tensor.
+                else:  # Output weight tensor.
                     tmp_mean = prior_mean[ii]
                     tmp_logvar = prior_logvar[ii]
                     tmp_std = prior_std[ii]
@@ -597,11 +603,11 @@ def train(task_id, data, mnet, hnet, device, config, shared, logger, writer):
     else:
         params = hnet.parameters()
     optimizer = tutils.get_optimizer(params, config.lr,
-        momentum=None, weight_decay=config.weight_decay,
-        use_adam=True, adam_beta1=config.adam_beta1)
+                                     momentum=None, weight_decay=config.weight_decay,
+                                     use_adam=True, adam_beta1=config.adam_beta1)
 
     assert config.ll_dist_std > 0
-    ll_scale = 1. / config.ll_dist_std**2
+    ll_scale = 1. / config.ll_dist_std ** 2
 
     for i in range(config.n_iter):
         ### Evaluate network.
@@ -637,7 +643,7 @@ def train(task_id, data, mnet, hnet, device, config, shared, logger, writer):
         else:
             w_mean, w_rho = mnet.extract_mean_and_rho(weights=hnet_out)
             w_std, w_logvar = putils.decode_diag_gauss(w_rho, \
-                logvar_enc=mnet.logvar_encoding, return_logvar=True)
+                                                       logvar_enc=mnet.logvar_encoding, return_logvar=True)
 
         ### Prior-matching loss.
         if config.mean_only:
@@ -646,14 +652,14 @@ def train(task_id, data, mnet, hnet, device, config, shared, logger, writer):
             if standard_prior:
                 # Gaussian prior with zero mean and unit variance.
                 loss_kl = putils.kl_diag_gauss_with_standard_gauss(w_mean,
-                    w_logvar)
+                                                                   w_logvar)
             else:
                 loss_kl = putils.kl_diag_gaussians(w_mean, w_logvar,
-                    prior_mean, prior_logvar)
+                                                   prior_mean, prior_logvar)
         else:
             # When using radial BNNs the weight distribution is not gaussian.
             loss_kl = putils.kl_radial_bnn_with_diag_gauss(w_mean, w_std,
-                prior_mean, prior_std, ce_sample_size=config.num_kl_samples)
+                                                           prior_mean, prior_std, ce_sample_size=config.num_kl_samples)
 
         ### Compute negative log-likelihood (NLL).
         loss_nll = 0
@@ -673,7 +679,7 @@ def train(task_id, data, mnet, hnet, device, config, shared, logger, writer):
             loss_nll += F.mse_loss(Y, T, reduction='mean')
 
         loss_nll *= 0.5 * ll_scale * \
-            data.num_train_samples / config.train_sample_size
+                    data.num_train_samples / config.train_sample_size
 
         ### Compute CL regularizer.
         loss_reg = 0
@@ -681,8 +687,8 @@ def train(task_id, data, mnet, hnet, device, config, shared, logger, writer):
             if config.regularizer == 'mse':
                 # Compute the regularizer as given in von Oswald et al. 2019
                 loss_reg = hreg.calc_fix_target_reg(hnet, task_id,
-                    targets=targets, mnet=mnet,
-                    inds_of_out_heads=regged_outputs)
+                                                    targets=targets, mnet=mnet,
+                                                    inds_of_out_heads=regged_outputs)
             else:
                 # Compute the regularizer based on a distance metric between
                 # the posterior distributions of all previous tasks before and
@@ -693,20 +699,20 @@ def train(task_id, data, mnet, hnet, device, config, shared, logger, writer):
                     w_mean_t, w_rho_t = mnet.extract_mean_and_rho( \
                         weights=hnet_out)
                     _, w_logvar_t = putils.decode_diag_gauss(w_rho_t, \
-                        logvar_enc=mnet.logvar_encoding, return_logvar=True)
+                                                             logvar_enc=mnet.logvar_encoding, return_logvar=True)
 
                     if config.regularizer == 'fkl':
                         # Use the forward KL divergence
                         loss_reg += putils.kl_diag_gaussians(w_mean_pre[t],
-                                w_logvar_pre[t], w_mean_t, w_logvar_t)
+                                                             w_logvar_pre[t], w_mean_t, w_logvar_t)
                     elif config.regularizer == 'rkl':
                         # Use the reverse KL divergence
                         loss_reg += putils.kl_diag_gaussians(w_mean_t,
-                                w_logvar_t, w_mean_pre[t], w_logvar_pre[t])
+                                                             w_logvar_t, w_mean_pre[t], w_logvar_pre[t])
                     elif config.regularizer == 'w2':
                         # Use the Wasserstein-2 metric
                         loss_reg += putils.square_wasserstein_2(w_mean_pre[t],
-                                w_logvar_pre[t], w_mean_t, w_logvar_t)
+                                                                w_logvar_pre[t], w_mean_t, w_logvar_t)
 
                 loss_reg /= task_id
 
@@ -718,7 +724,7 @@ def train(task_id, data, mnet, hnet, device, config, shared, logger, writer):
                                             config.clip_grad_value)
         elif config.clip_grad_norm != -1:
             torch.nn.utils.clip_grad_norm_(optimizer.param_groups[0]['params'],
-                                            config.clip_grad_norm)
+                                           config.clip_grad_norm)
         optimizer.step()
 
         if i % 50 == 0:
@@ -740,7 +746,8 @@ def train(task_id, data, mnet, hnet, device, config, shared, logger, writer):
                 writer.add_histogram('train/task_%d/predicted_stds' % task_id,
                                      std_outputs, i)
 
-    logger.info('Training network on task %d ... Done' % (task_id+1))
+    logger.info('Training network on task %d ... Done' % (task_id + 1))
+
 
 def run():
     """Run the script.
@@ -757,7 +764,7 @@ def run():
     config = train_args.parse_cmd_arguments(mode=mode)
 
     device, writer, logger = sutils.setup_environment(config,
-        logger_name=mode)
+                                                      logger_name=mode)
 
     train_utils.backup_cli_command(config)
 
@@ -767,14 +774,14 @@ def run():
     ### Generate networks.
     use_hnet = not config.mnet_only
     mnet, hnet = train_utils.generate_gauss_networks(config, logger, dhandlers,
-        device, create_hnet=use_hnet, non_gaussian=config.mean_only)
+                                                     device, create_hnet=use_hnet, non_gaussian=config.mean_only)
 
     ### Simple struct, that is used to share data among functions.
     shared = Namespace()
     shared.experiment_type = mode
     shared.all_dhandlers = dhandlers
     # Mean and variance of prior that is used for variational inference.
-    if config.mean_only: # No prior-matching can be performed.
+    if config.mean_only:  # No prior-matching can be performed.
         shared.prior_mean = None
         shared.prior_logvar = None
         shared.prior_std = None
@@ -824,32 +831,32 @@ def run():
 
     ### Train on tasks sequentially.
     for i in range(num_tasks):
-        logger.info('### Training on task %d ###' % (i+1))
+        logger.info('### Training on task %d ###' % (i + 1))
         data = dhandlers[i]
         # Train the network.
         train(i, data, mnet, hnet, device, config, shared, logger, writer)
 
         ### Test networks.
-        test(dhandlers[:(i+1)], mnet, hnet, device, config, shared, logger,
+        test(dhandlers[:(i + 1)], mnet, hnet, device, config, shared, logger,
              writer)
 
-        if config.train_from_scratch and i < num_tasks-1:
+        if config.train_from_scratch and i < num_tasks - 1:
             # We have to checkpoint the networks, such that we can reload them
             # for task inference later during testing.
             pmutils.checkpoint_nets(config, shared, i, mnet, hnet)
 
             mnet, hnet = train_utils.generate_gauss_networks(config, logger,
-                dhandlers, device, create_hnet=use_hnet,
-                non_gaussian=config.mean_only)
+                                                             dhandlers, device, create_hnet=use_hnet,
+                                                             non_gaussian=config.mean_only)
 
     if config.store_final_model:
         logger.info('Checkpointing final model ...')
-        pmutils.checkpoint_nets(config, shared, num_tasks-1, mnet, hnet)
+        pmutils.checkpoint_nets(config, shared, num_tasks - 1, mnet, hnet)
 
     logger.info('During MSE values after training each task: %s' % \
-          np.array2string(shared.during_mse, precision=5, separator=','))
+                np.array2string(shared.during_mse, precision=5, separator=','))
     logger.info('Final MSE values after training on all tasks: %s' % \
-          np.array2string(shared.current_mse, precision=5, separator=','))
+                np.array2string(shared.current_mse, precision=5, separator=','))
     logger.info('Final MSE mean %.4f (std %.4f).' % (shared.current_mse.mean(),
                                                      shared.current_mse.std()))
 
@@ -860,11 +867,10 @@ def run():
     writer.close()
 
     logger.info('Program finished successfully in %f sec.'
-                % (time()-script_start))
+                % (time() - script_start))
 
     return shared.current_mse, shared.during_mse
 
+
 if __name__ == '__main__':
     _, _ = run()
-
-

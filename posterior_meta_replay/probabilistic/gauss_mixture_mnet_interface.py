@@ -168,7 +168,7 @@ class GaussianMixtureBNNWrapper(nn.Module, MainNetInterface):
 
                 for p in rho:
                     if apply_rho_offset:
-                        p.data.uniform_(-3-self._rho_offset, -2-self._rho_offset)
+                        p.data.uniform_(-3 - self._rho_offset, -2 - self._rho_offset)
                     else:
                         p.data.uniform(-3, -2)
 
@@ -670,7 +670,7 @@ class GaussianMixtureBNNWrapper(nn.Module, MainNetInterface):
             (list): A sample from the factorized weight distribution.
         """
         if extracted_mean is not None and weights is not None:
-            warn('Argument "weigts" is ignored since "extracted_mean" is ' +
+            warn('Argument "weights" is ignored since "extracted_mean" is ' +
                  'provided.')
 
         if extracted_mean:
@@ -687,7 +687,15 @@ class GaussianMixtureBNNWrapper(nn.Module, MainNetInterface):
         if mean_only:
             sample = mean
         else:
-            sample = putils.sample_gumbel_softmax(mean, tau=1.0)
+            sample = putils.sample_from_gumbel_softmax_trick(mean, rho, coef,
+                                                             tau=1.0,
+                                                             gauss_mixture=self._gauss_mixture,
+                                                             K=1,
+                                                             d_in=1, d_out=1,
+                                                             is_bias=True,
+                                                             logvar_enc=False,
+                                                             generator=None,
+                                                             is_radial=False)
 
         return sample
 
