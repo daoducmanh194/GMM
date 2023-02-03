@@ -40,6 +40,7 @@ from data.special.split_mnist import SplitMNIST, get_split_mnist_handlers
 from data.special.split_cifar import SplitCIFAR10Data, SplitCIFAR100Data
 from data.special.split_cifar import get_split_cifar_handlers
 from probabilistic import GaussianBNNWrapper
+from probabilistic.gauss_mixture_mnet_interface import GaussianMixtureBNNWrapper
 from probabilistic import prob_utils as putils
 from probabilistic.prob_cifar import hpsearch_config_zenke_bbb as hpzenkebbb
 from probabilistic.prob_cifar import hpsearch_config_resnet_bbb as hpresnetbbb
@@ -1198,7 +1199,7 @@ def calc_regged_out_inds(config, task_id, data):
         config (argparse.Namespace): Command-line arguments.
         task_id (int): On which task the network is currently trained.
         data: The data loader of the current task.
-            
+
             Note:
                 This function assumes the same output shape for all data
                 handlers (i.e., all tasks).
@@ -1250,16 +1251,18 @@ def calc_reg_target(config, task_id, hnet, mnet=None):
     targets = hreg.get_current_targets(task_id, hnet)
     target_means = None
     target_logvars = None
+    target_coefs = None
 
     if hasattr(config, 'regularizer') and config.regularizer != 'mse':
-        assert isinstance(mnet, GaussianBNNWrapper)
+        assert isinstance(mnet, GaussianMixtureBNNWrapper)
 
         # Required to test different regularizers than the default one.
         target_means = [None] * task_id
         target_logvars = [None] * task_id
+        target_coefs = [None] * task_id
         for i in range(task_id):
-            target_means[i], rho = \
-                mnet.extract_mean_and_rho(weights=targets[i])
+            target_means[i], rho, coef = \
+                mnet.extract_mean_rho_coef(weights=targets[i])
             _, target_logvars[i] = putils.decode_diag_gauss(rho, \
                                                             logvar_enc=mnet.logvar_encoding, return_logvar=True)
 
@@ -1267,8 +1270,9 @@ def calc_reg_target(config, task_id, hnet, mnet=None):
             # want to backprop through them.
             target_means[i] = [p.detach().clone() for p in target_means[i]]
             target_logvars[i] = [p.detach().clone() for p in target_logvars[i]]
+            target_coefs[i] = [p.detach().clone() for p in target_coefs[i]]
 
-    return targets, target_means, target_logvars
+    return targets, target_means, target_logvars, target_coefs
 
 
 def calc_gauss_reg_all_tasks(config, task_id, mnet, hnet, target_means=None,

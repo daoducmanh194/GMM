@@ -57,6 +57,7 @@ from probabilistic.regression import hpsearch_config_ewc as hpewc
 import utils.misc as utils
 import utils.sim_utils as sutils
 
+
 def generate_tasks(config, writer):
     """Generate a set of predefined tasks.
 
@@ -71,6 +72,7 @@ def generate_tasks(config, writer):
     return generate_1d_tasks(show_plots=config.show_plots,
                              data_random_seed=config.data_random_seed,
                              writer=writer, task_set=config.used_task_set)
+
 
 def generate_1d_tasks(show_plots=True, data_random_seed=42, writer=None,
                       task_set=1):
@@ -97,53 +99,53 @@ def generate_1d_tasks(show_plots=True, data_random_seed=42, writer=None,
         # Regression task y = x**3 + eps, where eps ~ N(0, 9*I).
         # For instance, see here:
         #   https://arxiv.org/pdf/1703.01961.pdf
-        
+
         # How far outside the regime of the training data do we wanna predict
         # samples?
         test_offset = 1.5
 
-        map_funcs = [lambda x : (x**3.)]
+        map_funcs = [lambda x: (x ** 3.)]
         num_tasks = len(map_funcs)
         x_domains = [[-4, 4]]
-        std = 3 # 3**2 == 9
+        std = 3  # 3**2 == 9
         num_train = 20
 
         # Range of pred. dist. plots.
         test_domains = [[x_domains[0][0] - test_offset,
-                        x_domains[0][1] + test_offset]]
+                         x_domains[0][1] + test_offset]]
 
     elif task_set == 1:
-        #test_offset = 1
-        map_funcs = [lambda x : (x+3.),
-                     lambda x : 2. * np.power(x, 2) - 1,
-                     lambda x : np.power(x-3., 3)]
+        # test_offset = 1
+        map_funcs = [lambda x: (x + 3.),
+                     lambda x: 2. * np.power(x, 2) - 1,
+                     lambda x: np.power(x - 3., 3)]
         num_tasks = len(map_funcs)
-        x_domains = [[-4,-2], [-1,1], [2,4]]
+        x_domains = [[-4, -2], [-1, 1], [2, 4]]
         std = .05
 
-        #test_domains = [[-4.1, -0.5], [-2.5,2.5], [.5, 4.1]]
+        # test_domains = [[-4.1, -0.5], [-2.5,2.5], [.5, 4.1]]
         test_domains = [[-4.1, 4.1], [-4.1, 4.1], [-4.1, 4.1]]
 
-        #m = 32 # magnitude
-        #s = -.25 * np.pi
-        #map_funcs = [lambda x : m*np.pi * np.sin(x + s),
+        # m = 32 # magnitude
+        # s = -.25 * np.pi
+        # map_funcs = [lambda x : m*np.pi * np.sin(x + s),
         #             lambda x : m*np.pi * np.sin(x + s),
         #             lambda x : m*np.pi * np.sin(x + s)]
-        #x_domains = [[-2*np.pi, -1*np.pi], [-0.5*np.pi, 0.5*np.pi],
+        # x_domains = [[-2*np.pi, -1*np.pi], [-0.5*np.pi, 0.5*np.pi],
         #             [1*np.pi, 2*np.pi]]
-        #x_domains_test = [[-2*np.pi, 2*np.pi], [-2*np.pi, 2*np.pi],
+        # x_domains_test = [[-2*np.pi, 2*np.pi], [-2*np.pi, 2*np.pi],
         #                  [-2*np.pi, 2*np.pi]]
-        #std = 3
+        # std = 3
 
         num_tasks = len(map_funcs)
         num_train = 20
 
     elif task_set == 2:
-        map_funcs = [lambda x : np.power(x+3., 3),
-                     lambda x : 2. * np.power(x, 2) - 1,
-                     lambda x : -np.power(x-3., 3)]
+        map_funcs = [lambda x: np.power(x + 3., 3),
+                     lambda x: 2. * np.power(x, 2) - 1,
+                     lambda x: -np.power(x - 3., 3)]
         num_tasks = len(map_funcs)
-        x_domains = [[-4,-2], [-1,1], [2,4]]
+        x_domains = [[-4, -2], [-1, 1], [2, 4]]
         std = .1
 
         test_domains = [[-4.1, 4.1], [-4.1, 4.1], [-4.1, 4.1]]
@@ -154,11 +156,11 @@ def generate_1d_tasks(show_plots=True, data_random_seed=42, writer=None,
     elif task_set == 3:
         # Same as task set 2, but less aleatoric uncertainty.
 
-        map_funcs = [lambda x : np.power(x+3., 3),
-                     lambda x : 2. * np.power(x, 2) - 1,
-                     lambda x : -np.power(x-3., 3)]
+        map_funcs = [lambda x: np.power(x + 3., 3),
+                     lambda x: 2. * np.power(x, 2) - 1,
+                     lambda x: -np.power(x - 3., 3)]
         num_tasks = len(map_funcs)
-        x_domains = [[-4,-2], [-1,1], [2,4]]
+        x_domains = [[-4, -2], [-1, 1], [2, 4]]
         std = .05
 
         test_domains = [[-4.1, 4.1], [-4.1, 4.1], [-4.1, 4.1]]
@@ -172,12 +174,12 @@ def generate_1d_tasks(show_plots=True, data_random_seed=42, writer=None,
     dhandlers = []
     for i in range(num_tasks):
         print('Generating %d-th task.' % (i))
-        #test_inter = [x_domains[i][0] - test_offset,
+        # test_inter = [x_domains[i][0] - test_offset,
         #              x_domains[i][1] + test_offset]
         dhandlers.append(ToyRegression(train_inter=x_domains[i],
-            num_train=num_train, test_inter=test_domains[i], num_test=50,
-            val_inter=x_domains[i], num_val=50,
-            map_function=map_funcs[i], std=std, rseed=data_random_seed))
+                                       num_train=num_train, test_inter=test_domains[i], num_test=50,
+                                       val_inter=x_domains[i], num_val=50,
+                                       map_function=map_funcs[i], std=std, rseed=data_random_seed))
 
         if writer is not None:
             dhandlers[-1].plot_dataset(show=False)
@@ -190,6 +192,7 @@ def generate_1d_tasks(show_plots=True, data_random_seed=42, writer=None,
             dhandlers[-1].plot_dataset()
 
     return dhandlers, num_tasks
+
 
 def generate_gauss_networks(config, logger, data_handlers, device,
                             no_mnet_weights=None, create_hnet=True,
@@ -268,27 +271,31 @@ def generate_gauss_networks(config, logger, data_handlers, device,
         mlp_arch = utils.str_to_ints(config.mlp_arch)
         net_act = utils.str_to_act(config.net_act)
         mnet = GaussianMixtureMLP(n_in=in_shape[0], n_out=out_shape[0],
-            hidden_layers=mlp_arch, activation_fn=net_act,
-            use_bias=not config.no_bias, no_weights=no_mnet_weights).to(device)
+                                  hidden_layers=mlp_arch,
+                                  activation_fn=net_act,
+                                  use_bias=not config.no_bias,
+                                  no_weights=no_mnet_weights).to(device)
     else:
         mnet_kwargs = {}
         if net_type == 'iresnet':
             mnet_kwargs['cutout_mod'] = True
-        mnet =  sutils.get_mnet_model(config, net_type, in_shape, out_shape,
-                                      device, no_weights=no_mnet_weights,
-                                      **mnet_kwargs)
+        mnet = sutils.get_mnet_model(config, net_type, in_shape, out_shape,
+                                     device, no_weights=no_mnet_weights,
+                                     **mnet_kwargs)
 
     # Initiaize main net weights, if any.
-    assert(not hasattr(config, 'custom_network_init'))
+    assert (not hasattr(config, 'custom_network_init'))
     mnet.custom_init(normal_init=config.normal_init,
                      normal_std=config.std_normal_init, zero_bias=True)
 
     # Convert main net into Gaussian BNN.
     orig_mnet = mnet
     if not non_gaussian:
-        mnet = GaussianMixtureBNNWrapper(mnet, no_mean_reinit=config.keep_orig_init,
-            logvar_encoding=config.use_logvar_enc, apply_rho_offset=True,
-            is_radial=config.radial_bnn).to(device)
+        mnet = GaussianMixtureBNNWrapper(mnet,
+                                         no_mean_reinit=config.keep_orig_init,
+                                         logvar_encoding=config.use_logvar_enc,
+                                         apply_rho_offset=True,
+                                         is_radial=config.radial_bnn).to(device)
     else:
         logger.debug('Created main network will not be converted into a ' +
                      'Gaussian main network.')
@@ -307,8 +314,8 @@ def generate_gauss_networks(config, logger, data_handlers, device,
             elif net_type == 'wrn':
                 chunk_shapes, num_per_chunk, orig_assembly_fct = \
                     wrn_chunking(orig_mnet,
-                        gcd_chunking=config.shmlp_gcd_chunking,
-                        ignore_bn_weights=False, ignore_out_weights=False)
+                                 gcd_chunking=config.shmlp_gcd_chunking,
+                                 ignore_bn_weights=False, ignore_out_weights=False)
             else:
                 raise NotImplementedError('"structured_hmlp" not implemented ' +
                                           'for network of type %s.' % net_type)
@@ -321,8 +328,8 @@ def generate_gauss_networks(config, logger, data_handlers, device,
 
                 def assembly_fct_gauss(list_of_chunks):
                     n = len(list_of_chunks)
-                    mean_chunks = list_of_chunks[:n//2]
-                    rho_chunks = list_of_chunks[n//2:]
+                    mean_chunks = list_of_chunks[:n // 2]
+                    rho_chunks = list_of_chunks[n // 2:]
 
                     return orig_assembly_fct(mean_chunks) + \
                         orig_assembly_fct(rho_chunks)
@@ -332,11 +339,11 @@ def generate_gauss_networks(config, logger, data_handlers, device,
         # For now, we either produce all or no weights with the hypernet.
         # Note, it can be that the mnet was produced with internal weights.
         assert mnet.hyper_shapes_learned is None or \
-            len(mnet.param_shapes) == len(mnet.hyper_shapes_learned)
+               len(mnet.param_shapes) == len(mnet.hyper_shapes_learned)
 
         hnet = sutils.get_hypernet(config, device, config.hnet_type,
-            mnet.param_shapes, num_tasks, shmlp_chunk_shapes=chunk_shapes,
-            shmlp_num_per_chunk=num_per_chunk, shmlp_assembly_fct=assembly_fct)
+                                   mnet.param_shapes, num_tasks, shmlp_chunk_shapes=chunk_shapes,
+                                   shmlp_num_per_chunk=num_per_chunk, shmlp_assembly_fct=assembly_fct)
 
         if config.hnet_out_masking != 0:
             logger.info('Generating binary masks to select task-specific ' +
@@ -356,7 +363,7 @@ def generate_gauss_networks(config, logger, data_handlers, device,
             for tid in range(config.num_tasks):
                 hnet_out_mask = []
                 for layer_shapes, is_output in zip(mnet.param_shapes, \
-                        mnet.get_output_weight_mask()):
+                                                   mnet.get_output_weight_mask()):
                     layer_mask = torch.ones(layer_shapes)
                     if is_output is None:
                         # We only mask weights that are not output weights.
@@ -368,7 +375,7 @@ def generate_gauss_networks(config, logger, data_handlers, device,
                 hnet_out_masks.append(hnet_out_mask)
 
             hnet_out_masks = hnet.convert_out_format(hnet_out_masks,
-                'sequential', 'flattened')
+                                                     'sequential', 'flattened')
 
             def hnet_out_masking_func(hnet_out_int, uncond_input=None,
                                       cond_input=None, cond_id=None):
@@ -376,17 +383,17 @@ def generate_gauss_networks(config, logger, data_handlers, device,
                 if isinstance(cond_id, int):
                     cond_id = [cond_id]
 
-                hnet_out_int[hnet_out_masks[cond_id, :]==0] = 0
+                hnet_out_int[hnet_out_masks[cond_id, :] == 0] = 0
                 return hnet_out_int
 
             def hnet_inp_handler(uncond_input=None, cond_input=None,
-                                 cond_id=None): # Identity
+                                 cond_id=None):  # Identity
                 return uncond_input, cond_input, cond_id
 
             hnet = HPerturbWrapper(hnet, output_handler=hnet_out_masking_func,
                                    input_handler=hnet_inp_handler)
 
-        #if config.hnet_type == 'structured_hmlp':
+        # if config.hnet_type == 'structured_hmlp':
         #    print(num_per_chunk)
         #    for ii, int_hnet in enumerate(hnet.internal_hnets):
         #        print('   Internal hnet %d with %d outputs.' % \
@@ -398,13 +405,14 @@ def generate_gauss_networks(config, logger, data_handlers, device,
         else:
             # Initialize task embeddings, if any.
             hnet_helpers.init_conditional_embeddings(hnet,
-                normal_std=config.std_normal_temb)
+                                                     normal_std=config.std_normal_temb)
 
             gauss_hyperfan_init(hnet, mnet=mnet, use_xavier=True,
-                                cond_var=config.std_normal_temb**2,
+                                cond_var=config.std_normal_temb ** 2,
                                 keep_hyperfan_mean=config.keep_orig_init)
 
     return mnet, hnet
+
 
 def apply_custom_hnet_init(config, logger, hnet):
     """Applying a custom hypernetwork init (based on user configs).
@@ -425,11 +433,11 @@ def apply_custom_hnet_init(config, logger, hnet):
 
         # Initialize task embeddings, if any.
         hnet_helpers.init_conditional_embeddings(hnet,
-            normal_std=config.std_normal_temb)
+                                                 normal_std=config.std_normal_temb)
 
         # Initialize chunk embeddings, if any.
         hnet_helpers.init_chunk_embeddings(hnet,
-            normal_std=config.std_normal_emb)
+                                           normal_std=config.std_normal_emb)
     else:
         # Legacy support.
         logger.warning('Applying unsafe custom network initialization. This ' +
@@ -440,7 +448,7 @@ def apply_custom_hnet_init(config, logger, hnet):
 
         for W in init_params:
             # FIXME not all 1D vectors are bias vectors (e.g., batch norm weights).
-            if W.ndimension() == 1: # Bias vector.
+            if W.ndimension() == 1:  # Bias vector.
                 torch.nn.init.constant_(W, 0)
             elif config.normal_init:
                 torch.nn.init.normal_(W, mean=0, std=config.std_normal_init)
@@ -457,6 +465,7 @@ def apply_custom_hnet_init(config, logger, hnet):
         if hnet.has_task_embs:
             for temb in hnet.get_task_embs():
                 torch.nn.init.normal_(temb, mean=0., std=config.std_normal_temb)
+
 
 def plot_predictive_distribution(data, inputs, predictions, show_raw_pred=False,
                                  figsize=(10, 6), show=True):
@@ -475,7 +484,7 @@ def plot_predictive_distribution(data, inputs, predictions, show_raw_pred=False,
         figsize: A tuple, determining the size of the figure in inches.
         show: Whether the plot should be shown.
     """
-    assert(isinstance(data, ToyRegression))
+    assert (isinstance(data, ToyRegression))
     colors = utils.get_colorbrewer2_colors(family='Dark2')
 
     num_plots = 2 if show_raw_pred else 1
@@ -484,8 +493,8 @@ def plot_predictive_distribution(data, inputs, predictions, show_raw_pred=False,
     train_x = data.get_train_inputs().squeeze()
     train_y = data.get_train_outputs().squeeze()
 
-    #test_x = data.get_test_inputs().squeeze()
-    #test_y = data.get_test_outputs().squeeze()
+    # test_x = data.get_test_inputs().squeeze()
+    # test_y = data.get_test_outputs().squeeze()
 
     sample_x, sample_y = data._get_function_vals()
 
@@ -493,25 +502,25 @@ def plot_predictive_distribution(data, inputs, predictions, show_raw_pred=False,
         # The default matplotlib setting is usually too high for most plots.
         ax.locator_params(axis='y', nbins=2)
         ax.locator_params(axis='x', nbins=6)
-        
+
         ax.plot(sample_x, sample_y, color='k', label='f(x)',
-                 linestyle='dashed', linewidth=.5)
+                linestyle='dashed', linewidth=.5)
         ax.plot(train_x, train_y, 'o', color='k', label='Train')
-        #plt.plot(test_x, test_y, 'o', color=colors[1], label='Test')
-    
+        # plt.plot(test_x, test_y, 'o', color=colors[1], label='Test')
+
         inputs = inputs.squeeze()
         mean_pred = predictions.mean(axis=1)
         std_pred = predictions.std(axis=1)
-    
+
         c = colors[2]
         ax.plot(inputs, mean_pred, color=c, label='Pred')
         if i == 0:
             ax.fill_between(inputs, mean_pred + std_pred, mean_pred - std_pred,
                             color=c, alpha=0.3)
-            ax.fill_between(inputs, mean_pred + 2.*std_pred,
-                            mean_pred - 2.*std_pred, color=c, alpha=0.2)
-            ax.fill_between(inputs, mean_pred + 3.*std_pred,
-                            mean_pred - 3.*std_pred, color=c, alpha=0.1)
+            ax.fill_between(inputs, mean_pred + 2. * std_pred,
+                            mean_pred - 2. * std_pred, color=c, alpha=0.2)
+            ax.fill_between(inputs, mean_pred + 3. * std_pred,
+                            mean_pred - 3. * std_pred, color=c, alpha=0.1)
 
         ax.legend()
         ax.set_xlabel('$x$')
@@ -524,6 +533,7 @@ def plot_predictive_distribution(data, inputs, predictions, show_raw_pred=False,
 
     if show:
         plt.show()
+
 
 def plot_mse(config, writer, num_tasks, current_mse, during_mse=None,
              baselines=None, save_fig=True, summary_label='test/mse'):
@@ -543,7 +553,7 @@ def plot_mse(config, writer, num_tasks, current_mse, during_mse=None,
         save_fig: Whether the figure should be saved in the output folder.
         summary_label: Label used for the figure when writing it to tensorboard.
     """
-    x_vals = np.arange(1, num_tasks+1)
+    x_vals = np.arange(1, num_tasks + 1)
 
     num_plots = 1
     if during_mse is not None:
@@ -568,7 +578,7 @@ def plot_mse(config, writer, num_tasks, current_mse, during_mse=None,
 
     if baselines is not None:
         for i, (label, vals) in enumerate(baselines.items()):
-            plt.scatter(x_vals, vals, label=label, color=colors[2+i],
+            plt.scatter(x_vals, vals, label=label, color=colors[2 + i],
                         marker='x')
 
     plt.ylabel('MSE')
@@ -584,6 +594,7 @@ def plot_mse(config, writer, num_tasks, current_mse, during_mse=None,
                       close=not config.show_plots)
     if config.show_plots:
         utils.repair_canvas_and_show_fig(plt.gcf())
+
 
 def compute_mse(task_id, data, mnet, hnet, device, config, shared, hhnet=None,
                 split_type='test', return_dataset=False,
@@ -691,7 +702,7 @@ def compute_mse(task_id, data, mnet, hnet, device, config, shared, hhnet=None,
             - ``mse_vals``: Numpy array of MSE values per weight sample.
     """
     assert split_type in ['test', 'val', 'train']
-    assert np.prod(data.out_shape) == 1 # Method expects 1D regression task.
+    assert np.prod(data.out_shape) == 1  # Method expects 1D regression task.
     assert normal_post is None or hnet is None and hhnet is None
 
     return_vals = Namespace()
@@ -699,7 +710,7 @@ def compute_mse(task_id, data, mnet, hnet, device, config, shared, hhnet=None,
     allowed_outputs = None
     if config.multi_head:
         n_y = data.out_shape[0]
-        allowed_outputs = list(range(task_id*n_y, (task_id+1)*n_y))
+        allowed_outputs = list(range(task_id * n_y, (task_id + 1) * n_y))
 
     if split_type == 'train':
         X = data.get_train_inputs()
@@ -766,7 +777,7 @@ def compute_mse(task_id, data, mnet, hnet, device, config, shared, hhnet=None,
 
     for j in range(config.val_sample_size):
         weights = None
-        if normal_post is not None: # Sample weights from a Gaussian posterior.
+        if normal_post is not None:  # Sample weights from a Gaussian posterior.
             weights = []
             for ii, pmean in enumerate(normal_post[0]):
                 pstd = normal_post[1][ii]
@@ -780,11 +791,11 @@ def compute_mse(task_id, data, mnet, hnet, device, config, shared, hhnet=None,
             # FIXME Wasteful computation - same predictions every iteration
             Y = mnet.forward(X, weights=w_mean)
         else:
-            if hnet is not None: # Implicit hypernetwork.
+            if hnet is not None:  # Implicit hypernetwork.
                 z = torch.normal(torch.zeros(1, shared.noise_dim),
                                  config.latent_std).to(device)
                 weights = hnet.forward(uncond_input=z, weights=hnet_weights)
-            else: # Main network only training.
+            else:  # Main network only training.
                 # FIXME Wasteful computation - same predictions every iteration
                 weights = None
 
@@ -801,16 +812,17 @@ def compute_mse(task_id, data, mnet, hnet, device, config, shared, hhnet=None,
                 return_vals.samples = None
             else:
                 return_vals.samples[j, :] = torch.cat([p.detach().flatten() \
-                    for p in weights]).cpu().numpy()
+                                                       for p in weights]).cpu().numpy()
 
     return_vals.mse_vals = mse_vals
 
     if return_predictions:
-        #return_vals.preds_mean = predictions.mean(axis=1)
-        #return_vals.preds_std = predictions.std(axis=1)
+        # return_vals.preds_mean = predictions.mean(axis=1)
+        # return_vals.preds_std = predictions.std(axis=1)
         return_vals.predictions = predictions
 
     return mse_vals.mean(), return_vals
+
 
 def plot_predictive_distributions(config, writer, data_handlers, inputs,
                                   preds_mean, preds_std, save_fig=True,
@@ -828,9 +840,9 @@ def plot_predictive_distributions(config, writer, data_handlers, inputs,
         publication_style: whether plots should be made in publication style.
     """
     num_tasks = len(data_handlers)
-    assert(len(inputs) == num_tasks)
-    assert(len(preds_mean) == num_tasks)
-    assert(len(preds_std) == num_tasks)
+    assert (len(inputs) == num_tasks)
+    assert (len(preds_mean) == num_tasks)
+    assert (len(preds_std) == num_tasks)
 
     colors = utils.get_colorbrewer2_colors(family='Dark2')
     if num_tasks > len(colors):
@@ -841,7 +853,7 @@ def plot_predictive_distributions(config, writer, data_handlers, inputs,
     fig, axes = plt.subplots(figsize=(12, 6))
 
     if publication_style:
-        ts, lw, ms = 60, 15, 10 # text fontsize, line width, marker size
+        ts, lw, ms = 60, 15, 10  # text fontsize, line width, marker size
     else:
         ts, lw, ms = 12, 5, 8
 
@@ -850,38 +862,38 @@ def plot_predictive_distributions(config, writer, data_handlers, inputs,
     plt.locator_params(axis='x', nbins=6)
 
     for i, data in enumerate(data_handlers):
-        assert(isinstance(data, ToyRegression))
+        assert (isinstance(data, ToyRegression))
 
         # In what range to plot the real function values?
         train_range = data.train_x_range
         range_offset = (train_range[1] - train_range[0]) * 0.05
         sample_x, sample_y = data._get_function_vals( \
-            x_range=[train_range[0]-range_offset, train_range[1]+range_offset])
-        #sample_x, sample_y = data._get_function_vals()
+            x_range=[train_range[0] - range_offset, train_range[1] + range_offset])
+        # sample_x, sample_y = data._get_function_vals()
 
-        #plt.plot(sample_x, sample_y, color='k', label='f(x)',
+        # plt.plot(sample_x, sample_y, color='k', label='f(x)',
         #         linestyle='dashed', linewidth=.5)
         plt.plot(sample_x, sample_y, color='k',
-                 linestyle='dashed', linewidth=lw/7.)
+                 linestyle='dashed', linewidth=lw / 7.)
 
         train_x = data.get_train_inputs().squeeze()
         train_y = data.get_train_outputs().squeeze()
 
         if i == 0:
-            plt.plot(train_x, train_y, 'o', color='k', label='Training Data', 
-                markersize=ms)
+            plt.plot(train_x, train_y, 'o', color='k', label='Training Data',
+                     markersize=ms)
         else:
             plt.plot(train_x, train_y, 'o', color='k', markersize=ms)
 
         plt.plot(inputs[i], preds_mean[i], color=colors[i],
-                 label='Task %d' % (i+1), lw=lw/3.)
+                 label='Task %d' % (i + 1), lw=lw / 3.)
 
         plt.fill_between(inputs[i], preds_mean[i] + preds_std[i],
-            preds_mean[i] - preds_std[i], color=colors[i], alpha=0.3)
-        plt.fill_between(inputs[i], preds_mean[i] + 2.*preds_std[i],
-            preds_mean[i] - 2.*preds_std[i], color=colors[i], alpha=0.2)
-        plt.fill_between(inputs[i], preds_mean[i] + 3.*preds_std[i],
-            preds_mean[i] - 3.*preds_std[i], color=colors[i], alpha=0.1)
+                         preds_mean[i] - preds_std[i], color=colors[i], alpha=0.3)
+        plt.fill_between(inputs[i], preds_mean[i] + 2. * preds_std[i],
+                         preds_mean[i] - 2. * preds_std[i], color=colors[i], alpha=0.2)
+        plt.fill_between(inputs[i], preds_mean[i] + 3. * preds_std[i],
+                         preds_mean[i] - 3. * preds_std[i], color=colors[i], alpha=0.1)
 
     if publication_style:
         axes.grid(False)
@@ -889,20 +901,20 @@ def plot_predictive_distributions(config, writer, data_handlers, inputs,
         axes.set_ylim([-2.5, 3])
         axes.axhline(y=axes.get_ylim()[0], color='k', lw=lw)
         axes.axvline(x=axes.get_xlim()[0], color='k', lw=lw)
-        if len(data_handlers)==3:
+        if len(data_handlers) == 3:
             plt.yticks([-2, 0, 2], fontsize=ts)
             plt.xticks([-3, 0, 3], fontsize=ts)
         else:
             for tick in axes.yaxis.get_major_ticks():
-                tick.label.set_fontsize(ts) 
+                tick.label.set_fontsize(ts)
             for tick in axes.xaxis.get_major_ticks():
-                tick.label.set_fontsize(ts) 
-        axes.tick_params(axis='both', length=lw, direction='out', width=lw/2.)
+                tick.label.set_fontsize(ts)
+        axes.tick_params(axis='both', length=lw, direction='out', width=lw / 2.)
         if config.train_from_scratch:
             plt.title('training from scratch', fontsize=ts, pad=ts)
         elif config.beta == 0:
             plt.title('fine-tuning', fontsize=ts, pad=ts)
-        else: 
+        else:
             plt.title('CL with prob. hnet reg.', fontsize=ts, pad=ts)
     else:
         plt.legend()
@@ -919,6 +931,7 @@ def plot_predictive_distributions(config, writer, data_handlers, inputs,
                       close=not config.show_plots)
     if config.show_plots:
         utils.repair_canvas_and_show_fig(plt.gcf())
+
 
 def calc_batch_uncertainty(config, task_id, inputs, mnet, hnet, num_w_samples,
                            mnet_weights=None, allowed_outputs=None):
@@ -992,6 +1005,7 @@ def calc_batch_uncertainty(config, task_id, inputs, mnet, hnet, num_w_samples,
 
         return uncertainties
 
+
 def setup_summary_dict(config, shared, experiment, num_tasks, mnet, hnet=None,
                        hhnet=None, dis=None):
     """Setup the summary dictionary that is written to the performance
@@ -1019,7 +1033,7 @@ def setup_summary_dict(config, shared, experiment, num_tasks, mnet, hnet=None,
         hhnet (optional): Hyper-hypernetwork.
         dnet (optional): Discriminator.
     """
-    assert(experiment in ['bbb', 'avb', 'ssge', 'ewc', 'mt'])
+    assert (experiment in ['bbb', 'avb', 'ssge', 'ewc', 'mt'])
 
     summary = dict()
 
@@ -1100,6 +1114,7 @@ def setup_summary_dict(config, shared, experiment, num_tasks, mnet, hnet=None,
 
     shared.summary = summary
 
+
 def save_summary_dict(config, shared):
     """Write a text file in the result folder that gives a quick
     overview over the results achieved so far.
@@ -1108,10 +1123,10 @@ def save_summary_dict(config, shared):
         (....): See docstring of function :func:`setup_summary_dict`.
     """
     # "setup_summary_dict" must be called first.
-    assert(hasattr(shared, 'summary'))
+    assert (hasattr(shared, 'summary'))
 
     summary_fn = 'performance_overview.txt'
-    #summary_fn = hpbbb._SUMMARY_FILENAME
+    # summary_fn = hpbbb._SUMMARY_FILENAME
 
     with open(os.path.join(config.out_dir, summary_fn), 'w') as f:
         for k, v in shared.summary.items():
@@ -1121,6 +1136,7 @@ def save_summary_dict(config, shared):
                 f.write('%s %f\n' % (k, v))
             else:
                 f.write('%s %d\n' % (k, v))
+
 
 def backup_cli_command(config):
     """Write the curret CLI call into a script.
@@ -1147,6 +1163,7 @@ def backup_cli_command(config):
         f.write('# The user invoked CLI call that caused the creation of\n')
         f.write('# this output folder.\n')
         f.write(command)
+
 
 if __name__ == '__main__':
     pass

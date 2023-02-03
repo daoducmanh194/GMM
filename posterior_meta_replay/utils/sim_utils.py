@@ -58,6 +58,7 @@ from hnets.chunked_deconv_hnet import ChunkedHDeconv
 from utils import logger_config
 from utils import misc
 
+
 def setup_environment(config, logger_name='hnet_sim_logger'):
     """Setup the general environment for training.
 
@@ -94,7 +95,7 @@ def setup_environment(config, logger_name='hnet_sim_logger'):
         # FIXME We do not want to use python its `input` function, as it blocks
         # the program completely. Therefore, we use `select`, but this might
         # not work on all platforms!
-        #response = input('The output folder %s already exists. ' % \
+        # response = input('The output folder %s already exists. ' % \
         #                 (config.out_dir) + \
         #                 'Do you want us to delete it? [y/n]')
         print('The output folder %s already exists. ' % (config.out_dir) + \
@@ -126,8 +127,8 @@ def setup_environment(config, logger_name='hnet_sim_logger'):
     ### Initialize logger.
     logger_name = '%s_%d' % (logger_name, int(time() * 1000))
     logger = logger_config.config_logger(logger_name,
-        os.path.join(config.out_dir, 'logfile.txt'),
-        logging.DEBUG, logging.INFO if config.loglevel_info else logging.DEBUG)
+                                         os.path.join(config.out_dir, 'logfile.txt'),
+                                         logging.DEBUG, logging.INFO if config.loglevel_info else logging.DEBUG)
     # FIXME If we don't disable this, then the multiprocessing from the data
     # loader causes all messages to be logged twice. I could not find the cause
     # of this problem, but this simple switch fixes it.
@@ -150,8 +151,8 @@ def setup_environment(config, logger_name='hnet_sim_logger'):
                            'more than 1 worker (see "num_workers").')
 
     ### Select torch device.
-    assert(hasattr(config, 'no_cuda') or hasattr(config, 'use_cuda'))
-    assert(not hasattr(config, 'no_cuda') or not hasattr(config, 'use_cuda'))
+    assert (hasattr(config, 'no_cuda') or hasattr(config, 'use_cuda'))
+    assert (not hasattr(config, 'no_cuda') or not hasattr(config, 'use_cuda'))
 
     if hasattr(config, 'no_cuda'):
         use_cuda = not config.no_cuda and torch.cuda.is_available()
@@ -169,6 +170,7 @@ def setup_environment(config, logger_name='hnet_sim_logger'):
         writer = SummaryWriter(logdir=os.path.join(config.out_dir, 'summary'))
 
     return device, writer, logger
+
 
 def get_mnet_model(config, net_type, in_shape, out_shape, device, cprefix=None,
                    no_weights=False, **mnet_kwargs):
@@ -221,8 +223,8 @@ def get_mnet_model(config, net_type, in_shape, out_shape, device, cprefix=None,
     Returns:
         The created main network model.
     """
-    assert(net_type in ['mlp', 'lenet', 'resnet', 'zenke', 'bio_conv_net',
-                        'chunked_mlp', 'simple_rnn', 'wrn', 'iresnet'])
+    assert (net_type in ['mlp', 'lenet', 'resnet', 'zenke', 'bio_conv_net',
+                         'chunked_mlp', 'simple_rnn', 'wrn', 'iresnet'])
 
     if cprefix is None:
         cprefix = ''
@@ -230,6 +232,7 @@ def get_mnet_model(config, net_type, in_shape, out_shape, device, cprefix=None,
     def gc(name):
         """Get config value with that name."""
         return getattr(config, '%s%s' % (cprefix, name))
+
     def hc(name):
         """Check whether config exists."""
         return hasattr(config, '%s%s' % (cprefix, name))
@@ -257,7 +260,7 @@ def get_mnet_model(config, net_type, in_shape, out_shape, device, cprefix=None,
     bn_distill_stats = get_val('bn_distill_stats')
     # This argument has to be handled during usage of the network and not during
     # construction.
-    #bn_no_stats_checkpointing = get_val('bn_no_stats_checkpointing')
+    # bn_no_stats_checkpointing = get_val('bn_no_stats_checkpointing')
 
     use_bn = None
     if batchnorm is not None:
@@ -267,163 +270,163 @@ def get_mnet_model(config, net_type, in_shape, out_shape, device, cprefix=None,
 
     # If an argument wasn't specified, then we use the default value that
     # is currently in the constructor.
-    assign = lambda x, y : y if x is None else x
+    assign = lambda x, y: y if x is None else x
 
     if net_type == 'mlp':
-        assert(hc('mlp_arch'))
-        assert(len(in_shape) == 1 and len(out_shape) == 1)
+        assert (hc('mlp_arch'))
+        assert (len(in_shape) == 1 and len(out_shape) == 1)
 
         # Default keyword arguments of class MLP.
         dkws = misc.get_default_args(MLP.__init__)
 
         mnet = MLP(n_in=in_shape[0], n_out=out_shape[0],
-            hidden_layers=misc.str_to_ints(gc('mlp_arch')),
-            activation_fn=assign(net_act, dkws['activation_fn']),
-            use_bias=assign(not no_bias, dkws['use_bias']),
-            no_weights=no_weights,
-            #init_weights=None,
-            dropout_rate=assign(dropout_rate, dkws['dropout_rate']),
-            use_spectral_norm=assign(specnorm, dkws['use_spectral_norm']),
-            use_batch_norm=assign(use_bn, dkws['use_batch_norm']),
-            bn_track_stats=assign(not bn_no_running_stats,
-                                  dkws['bn_track_stats']),
-            distill_bn_stats=assign(bn_distill_stats, dkws['distill_bn_stats']),
-            #use_context_mod=False,
-            #context_mod_inputs=False,
-            #no_last_layer_context_mod=False,
-            #context_mod_no_weights=False,
-            #context_mod_post_activation=False,
-            #context_mod_gain_offset=False,
-            #out_fn=None,
-            verbose=True,
-            **mnet_kwargs
-        ).to(device)
+                   hidden_layers=misc.str_to_ints(gc('mlp_arch')),
+                   activation_fn=assign(net_act, dkws['activation_fn']),
+                   use_bias=assign(not no_bias, dkws['use_bias']),
+                   no_weights=no_weights,
+                   # init_weights=None,
+                   dropout_rate=assign(dropout_rate, dkws['dropout_rate']),
+                   use_spectral_norm=assign(specnorm, dkws['use_spectral_norm']),
+                   use_batch_norm=assign(use_bn, dkws['use_batch_norm']),
+                   bn_track_stats=assign(not bn_no_running_stats,
+                                         dkws['bn_track_stats']),
+                   distill_bn_stats=assign(bn_distill_stats, dkws['distill_bn_stats']),
+                   # use_context_mod=False,
+                   # context_mod_inputs=False,
+                   # no_last_layer_context_mod=False,
+                   # context_mod_no_weights=False,
+                   # context_mod_post_activation=False,
+                   # context_mod_gain_offset=False,
+                   # out_fn=None,
+                   verbose=True,
+                   **mnet_kwargs
+                   ).to(device)
 
     elif net_type == 'resnet':
-        assert(len(out_shape) == 1)
+        assert (len(out_shape) == 1)
         assert hc('resnet_block_depth') and hc('resnet_channel_sizes')
 
         # Default keyword arguments of class ResNet.
         dkws = misc.get_default_args(ResNet.__init__)
 
         mnet = ResNet(in_shape=in_shape, num_classes=out_shape[0],
-            n=gc('resnet_block_depth'),
-            use_bias=assign(not no_bias, dkws['use_bias']),
-            num_feature_maps=misc.str_to_ints(gc('resnet_channel_sizes')),
-            verbose=True, #n=5,
-            no_weights=no_weights,
-            #init_weights=None,
-            use_batch_norm=assign(use_bn, dkws['use_batch_norm']),
-            bn_track_stats=assign(not bn_no_running_stats,
-                                  dkws['bn_track_stats']),
-            distill_bn_stats=assign(bn_distill_stats, dkws['distill_bn_stats']),
-            #use_context_mod=False,
-            #context_mod_inputs=False,
-            #no_last_layer_context_mod=False,
-            #context_mod_no_weights=False,
-            #context_mod_post_activation=False,
-            #context_mod_gain_offset=False,
-            #context_mod_apply_pixel_wise=False
-            **mnet_kwargs
-        ).to(device)
+                      n=gc('resnet_block_depth'),
+                      use_bias=assign(not no_bias, dkws['use_bias']),
+                      num_feature_maps=misc.str_to_ints(gc('resnet_channel_sizes')),
+                      verbose=True,  # n=5,
+                      no_weights=no_weights,
+                      # init_weights=None,
+                      use_batch_norm=assign(use_bn, dkws['use_batch_norm']),
+                      bn_track_stats=assign(not bn_no_running_stats,
+                                            dkws['bn_track_stats']),
+                      distill_bn_stats=assign(bn_distill_stats, dkws['distill_bn_stats']),
+                      # use_context_mod=False,
+                      # context_mod_inputs=False,
+                      # no_last_layer_context_mod=False,
+                      # context_mod_no_weights=False,
+                      # context_mod_post_activation=False,
+                      # context_mod_gain_offset=False,
+                      # context_mod_apply_pixel_wise=False
+                      **mnet_kwargs
+                      ).to(device)
 
     elif net_type == 'wrn':
-        assert(len(out_shape) == 1)
+        assert (len(out_shape) == 1)
         assert hc('wrn_block_depth') and hc('wrn_widening_factor')
 
         # Default keyword arguments of class WRN.
         dkws = misc.get_default_args(WRN.__init__)
 
         mnet = WRN(in_shape=in_shape, num_classes=out_shape[0],
-            n=gc('wrn_block_depth'),
-            use_bias=assign(not no_bias, dkws['use_bias']),
-            #num_feature_maps=misc.str_to_ints(gc('wrn_channel_sizes')),
-            verbose=True,
-            no_weights=no_weights,
-            use_batch_norm=assign(use_bn, dkws['use_batch_norm']),
-            bn_track_stats=assign(not bn_no_running_stats,
-                                  dkws['bn_track_stats']),
-            distill_bn_stats=assign(bn_distill_stats, dkws['distill_bn_stats']),
-            k=gc('wrn_widening_factor'),
-            use_fc_bias=gc('wrn_use_fc_bias'),
-            dropout_rate=gc('dropout_rate'),
-            #use_context_mod=False,
-            #context_mod_inputs=False,
-            #no_last_layer_context_mod=False,
-            #context_mod_no_weights=False,
-            #context_mod_post_activation=False,
-            #context_mod_gain_offset=False,
-            #context_mod_apply_pixel_wise=False
-            **mnet_kwargs
-        ).to(device)
+                   n=gc('wrn_block_depth'),
+                   use_bias=assign(not no_bias, dkws['use_bias']),
+                   # num_feature_maps=misc.str_to_ints(gc('wrn_channel_sizes')),
+                   verbose=True,
+                   no_weights=no_weights,
+                   use_batch_norm=assign(use_bn, dkws['use_batch_norm']),
+                   bn_track_stats=assign(not bn_no_running_stats,
+                                         dkws['bn_track_stats']),
+                   distill_bn_stats=assign(bn_distill_stats, dkws['distill_bn_stats']),
+                   k=gc('wrn_widening_factor'),
+                   use_fc_bias=gc('wrn_use_fc_bias'),
+                   dropout_rate=gc('dropout_rate'),
+                   # use_context_mod=False,
+                   # context_mod_inputs=False,
+                   # no_last_layer_context_mod=False,
+                   # context_mod_no_weights=False,
+                   # context_mod_post_activation=False,
+                   # context_mod_gain_offset=False,
+                   # context_mod_apply_pixel_wise=False
+                   **mnet_kwargs
+                   ).to(device)
 
     elif net_type == 'iresnet':
-        assert(len(out_shape) == 1)
+        assert (len(out_shape) == 1)
         assert hc('iresnet_use_fc_bias') and hc('iresnet_channel_sizes') \
-            and hc('iresnet_blocks_per_group') \
-            and hc('iresnet_bottleneck_blocks') \
-            and hc('iresnet_projection_shortcut')
+               and hc('iresnet_blocks_per_group') \
+               and hc('iresnet_bottleneck_blocks') \
+               and hc('iresnet_projection_shortcut')
 
         # Default keyword arguments of class WRN.
         dkws = misc.get_default_args(ResNetIN.__init__)
 
         mnet = ResNetIN(in_shape=in_shape, num_classes=out_shape[0],
-            use_bias=assign(not no_bias, dkws['use_bias']),
-            use_fc_bias=gc('wrn_use_fc_bias'),
-            num_feature_maps=misc.str_to_ints(gc('iresnet_channel_sizes')),
-            blocks_per_group=misc.str_to_ints(gc('iresnet_blocks_per_group')),
-            projection_shortcut=gc('iresnet_projection_shortcut'),
-            bottleneck_blocks=gc('iresnet_bottleneck_blocks'),
-            #cutout_mod=False,
-            no_weights=no_weights,
-            use_batch_norm=assign(use_bn, dkws['use_batch_norm']),
-            bn_track_stats=assign(not bn_no_running_stats,
-                                  dkws['bn_track_stats']),
-            distill_bn_stats=assign(bn_distill_stats, dkws['distill_bn_stats']),
-            #chw_input_format=False,
-            verbose=True,
-            #use_context_mod=False,
-            #context_mod_inputs=False,
-            #no_last_layer_context_mod=False,
-            #context_mod_no_weights=False,
-            #context_mod_post_activation=False,
-            #context_mod_gain_offset=False,
-            #context_mod_apply_pixel_wise=False
-            **mnet_kwargs
-        ).to(device)
+                        use_bias=assign(not no_bias, dkws['use_bias']),
+                        use_fc_bias=gc('wrn_use_fc_bias'),
+                        num_feature_maps=misc.str_to_ints(gc('iresnet_channel_sizes')),
+                        blocks_per_group=misc.str_to_ints(gc('iresnet_blocks_per_group')),
+                        projection_shortcut=gc('iresnet_projection_shortcut'),
+                        bottleneck_blocks=gc('iresnet_bottleneck_blocks'),
+                        # cutout_mod=False,
+                        no_weights=no_weights,
+                        use_batch_norm=assign(use_bn, dkws['use_batch_norm']),
+                        bn_track_stats=assign(not bn_no_running_stats,
+                                              dkws['bn_track_stats']),
+                        distill_bn_stats=assign(bn_distill_stats, dkws['distill_bn_stats']),
+                        # chw_input_format=False,
+                        verbose=True,
+                        # use_context_mod=False,
+                        # context_mod_inputs=False,
+                        # no_last_layer_context_mod=False,
+                        # context_mod_no_weights=False,
+                        # context_mod_post_activation=False,
+                        # context_mod_gain_offset=False,
+                        # context_mod_apply_pixel_wise=False
+                        **mnet_kwargs
+                        ).to(device)
 
     elif net_type == 'zenke':
-        assert(len(out_shape) == 1)
+        assert (len(out_shape) == 1)
 
         # Default keyword arguments of class ZenkeNet.
         dkws = misc.get_default_args(ZenkeNet.__init__)
 
         mnet = ZenkeNet(in_shape=in_shape, num_classes=out_shape[0],
-            verbose=True, #arch='cifar',
-            no_weights=no_weights,
-            #init_weights=None,
-            dropout_rate=assign(dropout_rate, dkws['dropout_rate']),
-            **mnet_kwargs
-        ).to(device)
+                        verbose=True,  # arch='cifar',
+                        no_weights=no_weights,
+                        # init_weights=None,
+                        dropout_rate=assign(dropout_rate, dkws['dropout_rate']),
+                        **mnet_kwargs
+                        ).to(device)
 
     elif net_type == 'bio_conv_net':
-        assert(len(out_shape) == 1)
+        assert (len(out_shape) == 1)
 
         # Default keyword arguments of class BioConvNet.
-        #dkws = misc.get_default_args(BioConvNet.__init__)
+        # dkws = misc.get_default_args(BioConvNet.__init__)
 
         mnet = BioConvNet(in_shape=in_shape, num_classes=out_shape[0],
-            no_weights=no_weights,
-            #init_weights=None,
-            #use_context_mod=False,
-            #context_mod_inputs=False,
-            #no_last_layer_context_mod=False,
-            #context_mod_no_weights=False,
-            #context_mod_post_activation=False,
-            #context_mod_gain_offset=False,
-            #context_mod_apply_pixel_wise=False
-            **mnet_kwargs
-        ).to(device)
+                          no_weights=no_weights,
+                          # init_weights=None,
+                          # use_context_mod=False,
+                          # context_mod_inputs=False,
+                          # no_last_layer_context_mod=False,
+                          # context_mod_no_weights=False,
+                          # context_mod_post_activation=False,
+                          # context_mod_gain_offset=False,
+                          # context_mod_apply_pixel_wise=False
+                          **mnet_kwargs
+                          ).to(device)
 
     elif net_type == 'chunked_mlp':
         assert hc('cmlp_arch') and hc('cmlp_chunk_arch') and \
@@ -435,26 +438,26 @@ def get_mnet_model(config, net_type, in_shape, out_shape, device, cprefix=None,
         dkws = misc.get_default_args(ChunkSqueezer.__init__)
 
         mnet = ChunkSqueezer(n_in=in_shape[0], n_out=out_shape[0],
-            inp_chunk_dim=gc('cmlp_in_cdim'),
-            out_chunk_dim=gc('cmlp_out_cdim'),
-            cemb_size=gc('cmlp_cemb_dim'),
-            #cemb_init_std=1.,
-            red_layers=misc.str_to_ints(gc('cmlp_chunk_arch')),
-            net_layers=misc.str_to_ints(gc('cmlp_arch')),
-            activation_fn=assign(net_act, dkws['activation_fn']),
-            use_bias=assign(not no_bias, dkws['use_bias']),
-            #dynamic_biases=None,
-            no_weights=no_weights,
-            #init_weights=None,
-            dropout_rate=assign(dropout_rate, dkws['dropout_rate']),
-            use_spectral_norm=assign(specnorm, dkws['use_spectral_norm']),
-            use_batch_norm=assign(use_bn, dkws['use_batch_norm']),
-            bn_track_stats=assign(not bn_no_running_stats,
-                                  dkws['bn_track_stats']),
-            distill_bn_stats=assign(bn_distill_stats, dkws['distill_bn_stats']),
-            verbose=True,
-            **mnet_kwargs
-        ).to(device)
+                             inp_chunk_dim=gc('cmlp_in_cdim'),
+                             out_chunk_dim=gc('cmlp_out_cdim'),
+                             cemb_size=gc('cmlp_cemb_dim'),
+                             # cemb_init_std=1.,
+                             red_layers=misc.str_to_ints(gc('cmlp_chunk_arch')),
+                             net_layers=misc.str_to_ints(gc('cmlp_arch')),
+                             activation_fn=assign(net_act, dkws['activation_fn']),
+                             use_bias=assign(not no_bias, dkws['use_bias']),
+                             # dynamic_biases=None,
+                             no_weights=no_weights,
+                             # init_weights=None,
+                             dropout_rate=assign(dropout_rate, dkws['dropout_rate']),
+                             use_spectral_norm=assign(specnorm, dkws['use_spectral_norm']),
+                             use_batch_norm=assign(use_bn, dkws['use_batch_norm']),
+                             bn_track_stats=assign(not bn_no_running_stats,
+                                                   dkws['bn_track_stats']),
+                             distill_bn_stats=assign(bn_distill_stats, dkws['distill_bn_stats']),
+                             verbose=True,
+                             **mnet_kwargs
+                             ).to(device)
 
     elif net_type == 'lenet':
         assert hc('lenet_type')
@@ -464,19 +467,19 @@ def get_mnet_model(config, net_type, in_shape, out_shape, device, cprefix=None,
         dkws = misc.get_default_args(LeNet.__init__)
 
         mnet = LeNet(in_shape=in_shape, num_classes=out_shape[0], verbose=True,
-             arch=gc('lenet_type'),
-             no_weights=no_weights,
-             #init_weights=None,
-             dropout_rate=assign(dropout_rate, dkws['dropout_rate']),
-             # TODO Context-mod weights.
-             **mnet_kwargs
-        ).to(device)
+                     arch=gc('lenet_type'),
+                     no_weights=no_weights,
+                     # init_weights=None,
+                     dropout_rate=assign(dropout_rate, dkws['dropout_rate']),
+                     # TODO Context-mod weights.
+                     **mnet_kwargs
+                     ).to(device)
 
     else:
         assert (net_type == 'simple_rnn')
         assert hc('srnn_rec_layers') and hc('srnn_pre_fc_layers') and \
-            hc('srnn_post_fc_layers')  and hc('srnn_no_fc_out') and \
-            hc('srnn_rec_type')
+               hc('srnn_post_fc_layers') and hc('srnn_no_fc_out') and \
+               hc('srnn_rec_type')
         assert len(in_shape) == 1 and len(out_shape) == 1
 
         if gc('srnn_rec_type') == 'lstm':
@@ -496,17 +499,18 @@ def get_mnet_model(config, net_type, in_shape, out_shape, device, cprefix=None,
             fc_layers.append(out_shape[0])
 
         mnet = SimpleRNN(n_in=in_shape[0], rnn_layers=rnn_layers,
-            fc_layers_pre=misc.str_to_ints(gc('srnn_pre_fc_layers')),
-            fc_layers=fc_layers,
-            activation=assign(net_act, dkws['activation']),
-            use_lstm=use_lstm,
-            use_bias=assign(not no_bias, dkws['use_bias']),
-            no_weights=no_weights,
-            verbose=True,
-            **mnet_kwargs
-        ).to(device)
+                         fc_layers_pre=misc.str_to_ints(gc('srnn_pre_fc_layers')),
+                         fc_layers=fc_layers,
+                         activation=assign(net_act, dkws['activation']),
+                         use_lstm=use_lstm,
+                         use_bias=assign(not no_bias, dkws['use_bias']),
+                         no_weights=no_weights,
+                         verbose=True,
+                         **mnet_kwargs
+                         ).to(device)
 
     return mnet
+
 
 def get_hypernet(config, device, net_type, target_shapes, num_conds,
                  no_cond_weights=False, no_uncond_weights=False,
@@ -569,6 +573,7 @@ def get_hypernet(config, device, net_type, target_shapes, num_conds,
     def gc(name):
         """Get config value with that name."""
         return getattr(config, '%s%s' % (cprefix, name))
+
     def hc(name):
         """Check whether config exists."""
         return hasattr(config, '%s%s' % (cprefix, name))
@@ -590,8 +595,8 @@ def get_hypernet(config, device, net_type, target_shapes, num_conds,
     specnorm = get_val('hnet_specnorm')
     batchnorm = get_val('hnet_batchnorm')
     no_batchnorm = get_val('hnet_no_batchnorm')
-    #bn_no_running_stats = get_val('hnet_bn_no_running_stats')
-    #n_distill_stats = get_val('hnet_bn_distill_stats')
+    # bn_no_running_stats = get_val('hnet_bn_no_running_stats')
+    # n_distill_stats = get_val('hnet_bn_distill_stats')
 
     use_bn = None
     if batchnorm is not None:
@@ -601,7 +606,7 @@ def get_hypernet(config, device, net_type, target_shapes, num_conds,
 
     # If an argument wasn't specified, then we use the default value that
     # is currently in the constructor.
-    assign = lambda x, y : y if x is None else x
+    assign = lambda x, y: y if x is None else x
     ### FIXME Code copied until here                               ###
 
     if hc('hmlp_arch'):
@@ -639,18 +644,18 @@ def get_hypernet(config, device, net_type, target_shapes, num_conds,
         dkws = misc.get_default_args(HMLP.__init__)
 
         hnet = HMLP(target_shapes,
-            uncond_in_size=uncond_in_size,
-            cond_in_size=cond_emb_size,
-            layers=hmlp_arch,
-            verbose=verbose,
-            activation_fn=assign(net_act, dkws['activation_fn']),
-            use_bias=assign(not no_bias, dkws['use_bias']),
-            no_uncond_weights=no_uncond_weights,
-            no_cond_weights=no_cond_weights,
-            num_cond_embs=num_conds,
-            dropout_rate=assign(dropout_rate, dkws['dropout_rate']),
-            use_spectral_norm=assign(specnorm, dkws['use_spectral_norm']),
-            use_batch_norm=assign(use_bn, dkws['use_batch_norm'])).to(device)
+                    uncond_in_size=uncond_in_size,
+                    cond_in_size=cond_emb_size,
+                    layers=hmlp_arch,
+                    verbose=verbose,
+                    activation_fn=assign(net_act, dkws['activation_fn']),
+                    use_bias=assign(not no_bias, dkws['use_bias']),
+                    no_uncond_weights=no_uncond_weights,
+                    no_cond_weights=no_cond_weights,
+                    num_cond_embs=num_conds,
+                    dropout_rate=assign(dropout_rate, dkws['dropout_rate']),
+                    use_spectral_norm=assign(specnorm, dkws['use_spectral_norm']),
+                    use_batch_norm=assign(use_bn, dkws['use_batch_norm'])).to(device)
 
     elif net_type == 'chunked_hmlp':
         assert hc('hmlp_arch')
@@ -662,20 +667,20 @@ def get_hypernet(config, device, net_type, target_shapes, num_conds,
         dkws = misc.get_default_args(ChunkedHMLP.__init__)
 
         hnet = ChunkedHMLP(target_shapes, gc('chmlp_chunk_size'),
-            chunk_emb_size=chunk_emb_size,
-            cond_chunk_embs=assign(cond_chunk_embs, dkws['cond_chunk_embs']),
-            uncond_in_size=uncond_in_size,
-            cond_in_size=cond_emb_size,
-            layers=hmlp_arch,
-            verbose=verbose,
-            activation_fn=assign(net_act, dkws['activation_fn']),
-            use_bias=assign(not no_bias, dkws['use_bias']),
-            no_uncond_weights=no_uncond_weights,
-            no_cond_weights=no_cond_weights,
-            num_cond_embs=num_conds,
-            dropout_rate=assign(dropout_rate, dkws['dropout_rate']),
-            use_spectral_norm=assign(specnorm, dkws['use_spectral_norm']),
-            use_batch_norm=assign(use_bn, dkws['use_batch_norm'])).to(device)
+                           chunk_emb_size=chunk_emb_size,
+                           cond_chunk_embs=assign(cond_chunk_embs, dkws['cond_chunk_embs']),
+                           uncond_in_size=uncond_in_size,
+                           cond_in_size=cond_emb_size,
+                           layers=hmlp_arch,
+                           verbose=verbose,
+                           activation_fn=assign(net_act, dkws['activation_fn']),
+                           use_bias=assign(not no_bias, dkws['use_bias']),
+                           no_uncond_weights=no_uncond_weights,
+                           no_cond_weights=no_cond_weights,
+                           num_cond_embs=num_conds,
+                           dropout_rate=assign(dropout_rate, dkws['dropout_rate']),
+                           use_spectral_norm=assign(specnorm, dkws['use_spectral_norm']),
+                           use_batch_norm=assign(use_bn, dkws['use_batch_norm'])).to(device)
 
     elif net_type == 'structured_hmlp':
         assert hc('hmlp_arch')
@@ -683,8 +688,8 @@ def get_hypernet(config, device, net_type, target_shapes, num_conds,
         cond_chunk_embs = get_val('use_cond_chunk_embs')
 
         assert shmlp_chunk_shapes is not None and \
-            shmlp_num_per_chunk is not None and \
-            shmlp_assembly_fct is not None
+               shmlp_num_per_chunk is not None and \
+               shmlp_assembly_fct is not None
 
         # Default keyword arguments of class StructuredHMLP.
         dkws = misc.get_default_args(StructuredHMLP.__init__)
@@ -707,28 +712,29 @@ def get_hypernet(config, device, net_type, target_shapes, num_conds,
             shmlp_hmlp_kwargs = shmlp_hmlp_kwargs[0]
 
         hnet = StructuredHMLP(target_shapes,
-            shmlp_chunk_shapes,
-            shmlp_num_per_chunk,
-            chunk_emb_size,
-            shmlp_hmlp_kwargs,
-            shmlp_assembly_fct,
-            cond_chunk_embs=assign(cond_chunk_embs, dkws['cond_chunk_embs']),
-            uncond_in_size=uncond_in_size,
-            cond_in_size=cond_emb_size,
-            verbose=verbose,
-            no_uncond_weights=no_uncond_weights,
-            no_cond_weights=no_cond_weights,
-            num_cond_embs=num_conds).to(device)
+                              shmlp_chunk_shapes,
+                              shmlp_num_per_chunk,
+                              chunk_emb_size,
+                              shmlp_hmlp_kwargs,
+                              shmlp_assembly_fct,
+                              cond_chunk_embs=assign(cond_chunk_embs, dkws['cond_chunk_embs']),
+                              uncond_in_size=uncond_in_size,
+                              cond_in_size=cond_emb_size,
+                              verbose=verbose,
+                              no_uncond_weights=no_uncond_weights,
+                              no_cond_weights=no_cond_weights,
+                              num_cond_embs=num_conds).to(device)
 
     elif net_type == 'hdeconv':
-        #HDeconv
+        # HDeconv
         raise NotImplementedError
     else:
         assert net_type == 'chunked_hdeconv'
-        #ChunkedHDeconv
+        # ChunkedHDeconv
         raise NotImplementedError
 
     return hnet
+
 
 def calc_train_iter(num_train_samples, batch_size, num_iter=-1, epochs=-1):
     """Calculate the number of training tierations.
@@ -764,6 +770,7 @@ def calc_train_iter(num_train_samples, batch_size, num_iter=-1, epochs=-1):
         num_train_iter = epochs * iter_per_epoch
 
     return num_train_iter, iter_per_epoch
+
 
 if __name__ == '__main__':
     pass

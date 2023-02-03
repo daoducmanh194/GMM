@@ -58,8 +58,10 @@ from probabilistic.gauss_mixture_mnet_interface import GaussianMixtureBNNWrapper
 from probabilistic import prob_utils as putils
 from probabilistic.prob_cifar import train_utils as pcutils
 from probabilistic.prob_mnist import train_utils as pmutils
+from probabilistic.prob_mnist import train_utils as pmutils_mixture
 from probabilistic.regression import train_args
 from probabilistic.regression import train_utils
+from probabilistic.regression import train_mixture_utils
 import utils.hnet_regularizer as hreg
 import utils.misc as utils
 import utils.sim_utils as sutils
@@ -446,18 +448,18 @@ def evaluate(task_id, data, mnet, hnet, device, config, shared, logger, writer,
             logger.debug('Eval - Using training set as no validation set is ' +
                          'available.')
 
-        mse_val, val_struct = train_utils.compute_mse(task_id, data, mnet,
-                                                      hnet, device, config, shared, split_type=split_type)
+        mse_val, val_struct = train_mixture_utils.compute_mse(task_id, data, mnet,
+                                                              hnet, device, config, shared, split_type=split_type)
         ident = 'training' if split_type == 'train' else 'validation'
 
         logger.info('Eval - Mean MSE on %s set: %f (std: %g).'
                     % (ident, mse_val, val_struct.mse_vals.std()))
 
         # In contrast, we visualize uncertainty using the test set.
-        mse_test, test_struct = train_utils.compute_mse(task_id, data, mnet,
-                                                        hnet, device, config, shared, split_type='test',
-                                                        return_dataset=True,
-                                                        return_predictions=True)
+        mse_test, test_struct = train_mixture_utils.compute_mse(task_id, data, mnet,
+                                                                hnet, device, config, shared, split_type='test',
+                                                                return_dataset=True,
+                                                                return_predictions=True)
         logger.debug('Eval - Mean MSE on test set: %f (std: %g).'
                      % (mse_test, test_struct.mse_vals.std()))
 
@@ -532,8 +534,10 @@ def train(task_id, data, mnet, hnet, device, config, shared, logger, writer):
     # Regularizer targets.
     # Store distributions for each task before training on the current task.
     if calc_reg:
-        targets, w_mean_pre, w_logvar_pre = pmutils.calc_reg_target(config,
-                                                                    task_id, hnet, mnet=mnet)
+        targets, w_mean_pre, w_logvar_pre, w_coef_pre = pmutils_mixture.calc_reg_target(config,
+                                                                                        task_id,
+                                                                                        hnet,
+                                                                                        mnet=mnet)
 
     ### Define Prior
     # Whether prior-matching should even be performed?
@@ -554,13 +558,14 @@ def train(task_id, data, mnet, hnet, device, config, shared, logger, writer):
             hnet_out = None
         else:
             hnet_out = hnet.forward(cond_id=task_id - 1)
-        w_mean_prev, w_rho_prev = mnet.extract_mean_and_rho(weights=hnet_out)
+        w_mean_prev, w_rho_prev, w_coef = mnet.extract_mean_rho_coef(weights=hnet_out)
         w_std_prev, w_logvar_prev = putils.decode_diag_gauss(w_rho_prev, \
                                                              logvar_enc=mnet.logvar_encoding, return_logvar=True)
 
         prior_mean = [p.detach().clone() for p in w_mean_prev]
         prior_logvar = [p.detach().clone() for p in w_logvar_prev]
         prior_std = [p.detach().clone() for p in w_std_prev]
+        prior_coef = [p.detach().clone() for p in w_coef]
 
         # Note task-specific head weights of this task and future tasks should
         # be pulled to the prior, as they haven't been learned yet.
@@ -571,7 +576,7 @@ def train(task_id, data, mnet, hnet, device, config, shared, logger, writer):
         # tasks.
         if config.multi_head:  # FIXME A bit hacky :D
             # Output head weight masks for all previous tasks
-            out_masks = [mnet._mnet.get_output_weight_mask( \
+            out_masks = [mnet._mnet.get_output_weight_mask(
                 out_inds=regged_outputs[i], device=device) \
                 for i in range(task_id)]
             for ii, mask in enumerate(out_masks[0]):
@@ -581,20 +586,24 @@ def train(task_id, data, mnet, hnet, device, config, shared, logger, writer):
                     tmp_mean = prior_mean[ii]
                     tmp_logvar = prior_logvar[ii]
                     tmp_std = prior_std[ii]
+                    tmp_coef = prior_coef[ii]
 
                     prior_mean[ii] = shared.prior_mean[ii].clone()
                     prior_logvar[ii] = shared.prior_logvar[ii].clone()
                     prior_std[ii] = shared.prior_std[ii].clone()
+                    prior_coef[ii] = shared.prior_coef[ii].clone()
 
                     for jj, t_mask in enumerate(out_masks):
                         m = t_mask[ii]
                         prior_mean[ii][m] = tmp_mean[m]
                         prior_logvar[ii][m] = tmp_logvar[m]
                         prior_std[ii][m] = tmp_std[m]
+                        prior_coef[ii][m] = tmp_coef[m]
     else:
         prior_mean = shared.prior_mean
         prior_logvar = shared.prior_logvar
         prior_std = shared.prior_std
+        prior_coef = shared.prior_coef
         if config.prior_variance == 1:
             # Use standard Gaussian prior with 0 mean and unit variance.
             standard_prior = True
@@ -641,10 +650,12 @@ def train(task_id, data, mnet, hnet, device, config, shared, logger, writer):
             else:
                 w_mean = hnet_out
             w_std = None
+            w_coef = None
         else:
-            w_mean, w_rho = mnet.extract_mean_and_rho(weights=hnet_out)
-            w_std, w_logvar = putils.decode_diag_gauss(w_rho, \
-                                                       logvar_enc=mnet.logvar_encoding, return_logvar=True)
+            w_mean, w_rho, w_coef = mnet.extract_mean_rho_coef(weights=hnet_out)
+            w_std, w_logvar = putils.decode_diag_gauss(w_rho,
+                                                       logvar_enc=mnet.logvar_encoding,
+                                                       return_logvar=True)
 
         ### Prior-matching loss.
         if config.mean_only:
@@ -767,25 +778,28 @@ def run():
     device, writer, logger = sutils.setup_environment(config,
                                                       logger_name=mode)
 
-    train_utils.backup_cli_command(config)
+    train_mixture_utils.backup_cli_command(config)
 
     ### Create tasks.
-    dhandlers, num_tasks = train_utils.generate_tasks(config, writer)
+    dhandlers, num_tasks = train_mixture_utils.generate_tasks(config, writer)
 
     ### Generate networks.
     use_hnet = not config.mnet_only
-    mnet, hnet = train_utils.generate_gauss_networks(config, logger, dhandlers,
-                                                     device, create_hnet=use_hnet, non_gaussian=config.mean_only)
+    mnet, hnet = train_mixture_utils.generate_gauss_networks(config, logger,
+                                                             dhandlers, device,
+                                                             create_hnet=use_hnet,
+                                                             non_gaussian=config.mean_only)
 
     ### Simple struct, that is used to share data among functions.
     shared = Namespace()
     shared.experiment_type = mode
     shared.all_dhandlers = dhandlers
-    # Mean and variance of prior that is used for variational inference.
+    # Mean and variance of prior that is used for variational inference with coef.
     if config.mean_only:  # No prior-matching can be performed.
         shared.prior_mean = None
         shared.prior_logvar = None
         shared.prior_std = None
+        shared.prior_coef = None
     else:
         plogvar = np.log(config.prior_variance)
         pstd = np.sqrt(config.prior_variance)
@@ -795,6 +809,8 @@ def run():
                                for s in mnet.orig_param_shapes]
         shared.prior_std = [pstd * torch.ones(*s).to(device) \
                             for s in mnet.orig_param_shapes]
+        shared.prior_coef = [torch.ones(*s).to(device) \
+                             for s in mnet.orig_param_shapes]
 
     # Note, all MSE values are measured on a validation set if given, otherwise
     # on the training set. All samples in the validation set are expected to
@@ -819,8 +835,8 @@ def run():
 
     ### Initialize the performance measures, that should be tracked during
     ### training.
-    train_utils.setup_summary_dict(config, shared, 'bbb', num_tasks, mnet,
-                                   hnet=hnet)
+    train_mixture_utils.setup_summary_dict(config, shared, 'bbb', num_tasks,
+                                           mnet, hnet=hnet)
 
     # Add hparams to tensorboard, such that the identification of runs is
     # easier.
