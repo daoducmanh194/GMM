@@ -125,7 +125,7 @@ class GaussianMixtureBNNWrapper(nn.Module, MainNetInterface):
         MainNetInterface.__init__(self)
 
         assert isinstance(mnet, MainNetInterface)
-        assert isinstance(mnet, GaussianMixtureBNNWrapper)
+        # assert isinstance(mnet, GaussianMixtureBNNWrapper)
         assert (gauss_mixture, int)
 
         if is_radial:
@@ -148,18 +148,15 @@ class GaussianMixtureBNNWrapper(nn.Module, MainNetInterface):
         self._coef_params = []
         if mnet.internal_params is not None:
             for gauss in range(self._gauss_mixture):
-                mean = None
-                rho = None
-                coef = None
                 mean = mnet.internal_params
                 rho = nn.ParameterList()
                 coef = nn.ParameterList()
 
                 for p in mean:
-                    rho.append(nn.Parameter(torch.Tensor(p.zise()),
+                    rho.append(nn.Parameter(torch.Tensor(p.size()),
                                             requires_grad=True))
                     coef.append(nn.Parameter(torch.Tensor(p.size()),
-                                             requires_grad=True))
+                                            requires_grad=True))
 
                 # Initialize each weights of Gauss Mixture
                 if not no_mean_reinit:
