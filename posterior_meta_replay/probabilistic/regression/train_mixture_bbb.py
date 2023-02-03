@@ -114,6 +114,7 @@ def test(data_handlers, mnet, hnet, device, config, shared, logger, writer,
         val_targets = []  # Needed to compute MSE values.
         val_preds_mean = []
         val_preds_std = []
+        val_preds_coef = []
 
         # Which uncertainties have been measured per sample and task. The argmax
         # over all tasks gives the predicted task.
@@ -122,6 +123,7 @@ def test(data_handlers, mnet, hnet, device, config, shared, logger, writer,
         test_inputs = []
         test_preds_mean = []
         test_preds_std = []
+        test_preds_coef = []
 
         normal_post = None
         if 'ewc' in shared.experiment_type:
@@ -145,7 +147,7 @@ def test(data_handlers, mnet, hnet, device, config, shared, logger, writer,
                 hhnet_other = None
                 non_gaussian = config.mean_only \
                     if hasattr(config, 'mean_only') else True
-                mnet_other, hnet_other = train_utils.generate_gauss_networks( \
+                mnet_other, hnet_other = train_mixture_utils.generate_gauss_networks( \
                     config, logger, shared.all_dhandlers, device,
                     create_hnet=hnet is not None, non_gaussian=non_gaussian)
 
@@ -186,6 +188,7 @@ def test(data_handlers, mnet, hnet, device, config, shared, logger, writer,
             data_preds = np.empty((num_val_samples, config.val_sample_size, n))
             data_preds_mean = np.empty((num_val_samples, n))
             data_preds_std = np.empty((num_val_samples, n))
+            data_preds_coef = np.empty((num_val_samples, n))
 
             for j in range(n):
                 ckpt_score_j = None
@@ -214,7 +217,7 @@ def test(data_handlers, mnet, hnet, device, config, shared, logger, writer,
                     hhnet_j = hhnet
                     normal_post_j = normal_post
 
-                mse_val, val_struct = train_utils.compute_mse(j, data, mnet_j,
+                mse_val, val_struct = train_mixture_utils.compute_mse(j, data, mnet_j,
                                                               hnet_j, device, config, shared, hhnet=hhnet_j,
                                                               split_type=split_type, return_dataset=i == j,
                                                               return_predictions=True, disable_lrt=disable_lrt_test,
@@ -230,6 +233,7 @@ def test(data_handlers, mnet, hnet, device, config, shared, logger, writer,
                     val_targets.append(val_struct.targets)
                     val_preds_mean.append(val_struct.predictions.mean(axis=1))
                     val_preds_std.append(val_struct.predictions.std(axis=1))
+                    val_preds_coef.append(val_struct.targets.coef(axis=1))
 
                     shared.current_mse[i] = mse_val
 
@@ -242,7 +246,7 @@ def test(data_handlers, mnet, hnet, device, config, shared, logger, writer,
                     # The test set spans into the OOD range and can be used to
                     # visualize how uncertainty behaves outside the
                     # in-distribution range.
-                    mse_test, test_struct = train_utils.compute_mse(i, data,
+                    mse_test, test_struct = train_mixture_utils.compute_mse(i, data,
                                                                     mnet_j, hnet_j, device, config, shared,
                                                                     hhnet=hhnet_j,
                                                                     split_type='test', return_dataset=True,
@@ -256,6 +260,7 @@ def test(data_handlers, mnet, hnet, device, config, shared, logger, writer,
                 # I.e., how certain is our system that each of the samples
                 # belong to task j?
                 data_preds_std[:, j] = val_struct.predictions.std(axis=1)
+                data_preds_coef[:, j] = val_struct.predictions.coef(axis=1)
 
             val_task_preds.append(data_preds_std)
 
@@ -300,6 +305,7 @@ def test(data_handlers, mnet, hnet, device, config, shared, logger, writer,
             test_preds_mean.append(test_struct.predictions.mean(axis=1). \
                                    squeeze())
             test_preds_std.append(test_struct.predictions.std(axis=1).squeeze())
+            test_preds_coef.append(test_struct.predictions.coef(axis=1).squeeze())
 
             if hasattr(shared, 'during_mse') and \
                     shared.during_mse[i] == -1:
@@ -321,6 +327,7 @@ def test(data_handlers, mnet, hnet, device, config, shared, logger, writer,
                     w_all = list(test_struct.w_mean)
                     if test_struct.w_std is not None:
                         w_all += list(test_struct.w_std)
+                        w_all += list(test_struct.w_coef)
 
                 W_curr = torch.cat([d.clone().view(-1) for d in w_all])
                 if type(shared.during_weights[i]) == int:
@@ -375,7 +382,7 @@ def test(data_handlers, mnet, hnet, device, config, shared, logger, writer,
         'Current Inferred Val MSE': inferred_val_mse,
         # 'Current Test MSE': test_mse
     }
-    train_utils.plot_mse(config, writer, n, shared.current_mse[:n],
+    train_mixture_utils.plot_mse(config, writer, n, shared.current_mse[:n],
                          during_mse, baselines=additional_plots, save_fig=False,
                          summary_label='test/mse_detailed')
 
@@ -383,8 +390,9 @@ def test(data_handlers, mnet, hnet, device, config, shared, logger, writer,
     data_inputs = test_inputs
     mean_preds = test_preds_mean
     std_preds = test_preds_std
+    coef_preds = test_preds_coef
 
-    train_utils.plot_predictive_distributions(config, writer, data_handlers,
+    train_mixture_utils.plot_predictive_distributions(config, writer, data_handlers,
                                               data_inputs, mean_preds, std_preds, save_fig=save_fig,
                                               publication_style=config.publication_style)
 
@@ -670,8 +678,12 @@ def train(task_id, data, mnet, hnet, device, config, shared, logger, writer):
                                                    prior_mean, prior_logvar)
         else:
             # When using radial BNNs the weight distribution is not gaussian.
-            loss_kl = putils.kl_radial_bnn_with_diag_gauss(w_mean, w_std,
-                                                           prior_mean, prior_std, ce_sample_size=config.num_kl_samples)
+            # loss_kl = putils.kl_radial_bnn_with_diag_gauss(w_mean, w_std,
+            #                                                prior_mean, prior_std, ce_sample_size=config.num_kl_samples)
+            loss_kl = putils.upperbound_kl_mixture_gauss(
+                [w_mean, w_std, w_coef],
+                [w_mean_pre, w_std_prev, w_coef_pre]
+            )
 
         ### Compute negative log-likelihood (NLL).
         loss_nll = 0
@@ -681,7 +693,9 @@ def train(task_id, data, mnet, hnet, device, config, shared, logger, writer):
             else:
                 # Note, the sampling will happen inside the forward method.
                 Y = mnet.forward(X, weights=None, mean_only=False,
-                                 extracted_mean=w_mean, extracted_rho=w_rho)
+                                extracted_mean=w_mean,
+                                extracted_rho=w_rho,
+                                extracted_coef=w_coef)
             if config.multi_head:
                 Y = Y[:, allowed_outputs]
 
@@ -708,7 +722,7 @@ def train(task_id, data, mnet, hnet, device, config, shared, logger, writer):
                 for t in range(task_id):
                     hnet_out = hnet.forward(cond_id=t)
 
-                    w_mean_t, w_rho_t = mnet.extract_mean_and_rho( \
+                    w_mean_t, w_rho_t, w_coef_t = mnet.extract_mean_rho_coef( \
                         weights=hnet_out)
                     _, w_logvar_t = putils.decode_diag_gauss(w_rho_t, \
                                                              logvar_enc=mnet.logvar_encoding, return_logvar=True)
@@ -725,6 +739,12 @@ def train(task_id, data, mnet, hnet, device, config, shared, logger, writer):
                         # Use the Wasserstein-2 metric
                         loss_reg += putils.square_wasserstein_2(w_mean_pre[t],
                                                                 w_logvar_pre[t], w_mean_t, w_logvar_t)
+                    elif config.regularizer == 'mixture':
+                        # Use the mixture regularization
+                        loss_reg += putils.upperbound_kl_mixture_gauss(
+                            [w_mean_t, w_logvar_t, w_coef_t],
+                            [w_mean_pre[t], w_logvar_pre[t], w_coef_pre[t]]
+                        )
 
                 loss_reg /= task_id
 
@@ -753,10 +773,13 @@ def train(task_id, data, mnet, hnet, device, config, shared, logger, writer):
             if w_std is not None:
                 rho_outputs = torch.cat([d.clone().view(-1) for d in w_rho])
                 std_outputs = torch.cat([d.clone().view(-1) for d in w_std])
+                coef_outputs = torch.cat([d.clone().view(-1) for d in w_coef])
                 writer.add_histogram('train/task_%d/predicted_rhos' % task_id,
-                                     rho_outputs, i)
+                                    rho_outputs, i)
                 writer.add_histogram('train/task_%d/predicted_stds' % task_id,
-                                     std_outputs, i)
+                                    std_outputs, i)
+                writer.add_histogram('train/task_%d/predicted_coef' % task_id,
+                                    coef_outputs, i)
 
     logger.info('Training network on task %d ... Done' % (task_id + 1))
 

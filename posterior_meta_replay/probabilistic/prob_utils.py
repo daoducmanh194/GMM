@@ -579,5 +579,58 @@ def sample_from_gumbel_softmax_trick(mean, rho, coef, tau, gauss_mixture, K,
     return sample
 
 
+def compute_coef(num_component):
+    result = []
+    result.append(1)
+    for i in range(num_component - 1):
+        result.append((i + 1) * 1000)
+    result = result[::-1]
+    return result
+
+
+def kl_gauss(mean_a, logvar_a, mean_b, logvar_b):
+    r""" Compute KL between two Gausssian Distribution
+
+    .. math::
+        KL \big( p_a(\cdot) \mid\mid  p_b(\cdot) \big)
+
+    Args:
+        mean_a: Mean tensors of the first distribution (see argument `mean` of
+            method :func:`sample_diag_gauss`).
+        logvar_a: Log-variance tensors with the same shapes as the `mean_a`
+            tensors.
+        mean_b: Same as `mean_a` for second distribution.
+        logvar_b: Same as `logvar_a` for second distribution.
+
+    Returns:
+        The analytically computed KL divergence between these distributions.
+    """
+    kl = 0.
+    kl = 0.5 * (logvar_b - logvar_a) + 0.5 * (torch.exp(logvar_a) +
+                (mean_a - mean_b) ** 2) / torch.exp(logvar_b) - 0.5
+    return kl
+
+
+def upperbound_kl_mixture_gauss(mixture_gauss_a, mixture_gauss_b):
+    num_component = len(mixture_gauss_a[0])
+    list_mean_a = mixture_gauss_a[0]
+    list_mean_b = mixture_gauss_b[0]
+    list_logvar_a = mixture_gauss_a[1]
+    list_logvar_b = mixture_gauss_b[1]
+    list_coef_a = torch.nn.functional.softmax(mixture_gauss_a[2], dim=0)
+    list_coef_b = torch.nn.functional.softmax(mixture_gauss_b[2], dim=0)
+
+    kl = 0.
+    coef = compute_coef(num_component=num_component)
+
+    for i in range(num_component):
+        kl += torch.sum(list_coef_a[i] * 
+                (torch.log(list_coef_a[i]) - torch.log(list_coef_b[i])))
+        kl += torch.sum(list_coef_a[i] * 
+                        kl_gauss(list_mean_a[i], list_logvar_a[i],
+                                list_mean_b[i], list_logvar_b[i]))
+    return kl
+
+
 if __name__ == '__main__':
     pass
