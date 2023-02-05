@@ -160,6 +160,7 @@ class GaussianBNNWrapper(nn.Module, MainNetInterface):
         self._mean_params = None
         self._rho_params = None
         if mnet.internal_params is not None:
+            # print("initial internal param: {}".format(mnet.internal_params))
             self._mean_params = mnet.internal_params
             self._rho_params = nn.ParameterList()
 
@@ -183,11 +184,16 @@ class GaussianBNNWrapper(nn.Module, MainNetInterface):
             self._internal_params = nn.ParameterList()
             for p in self._mean_params:
                 self._internal_params.append(p)
+            # print(len(self._internal_params))
             for p in self._rho_params:
                 self._internal_params.append(p)
 
         # Simply duplicate `param_shapes` and `hyper_shapes_learned`.
         self._param_shapes = mnet.param_shapes + mnet.param_shapes
+        # print("Internal params: {}".format((self._internal_params)))
+        # print("Param shape: {}".format((self._param_shapes)))
+        # print("Internal params: {}".format(len(self._internal_params)))
+        # print("Param shape: {}".format(len(self._param_shapes)))
         if mnet._param_shapes_meta is not None:
             self._param_shapes_meta = []
             old_wlen = 0 if self.internal_params is None \
@@ -256,7 +262,7 @@ class GaussianBNNWrapper(nn.Module, MainNetInterface):
 
     @property
     def layer_bias_vectors(self):
-        """Getter for read-only attribute 
+        """Getter for read-only attribute
         :attr:`mnets.mnet_interface.MainNetInterface.layer_bias_vectors`.
 
         Returns:
@@ -271,7 +277,7 @@ class GaussianBNNWrapper(nn.Module, MainNetInterface):
 
     @property
     def batchnorm_layers(self):
-        """Getter for read-only attribute 
+        """Getter for read-only attribute
         :attr:`mnets.mnet_interface.MainNetInterface.batchnorm_layers`.
 
         Returns:
@@ -279,7 +285,7 @@ class GaussianBNNWrapper(nn.Module, MainNetInterface):
             :class:`utils.batchnorm_layer.BatchNormLayer` instances, if batch
             normalization is used.
         """
-        # FIXME 
+        # FIXME
         # warn('Class "GaussianBNNWrapper" didn\'t modify the attribute ' +
         #     '"batchnorm_layers", such that the contained weights only ' +
         #     'represent mean parameters.')
@@ -289,7 +295,7 @@ class GaussianBNNWrapper(nn.Module, MainNetInterface):
 
     @property
     def context_mod_layers(self):
-        """Getter for read-only attribute 
+        """Getter for read-only attribute
         :attr:`mnets.mnet_interface.MainNetInterface.context_mod_layers`.
 
         Returns:
@@ -486,8 +492,11 @@ mnet_interface.MainNetInterface.hyper_shapes_learned`
         #         'provided pr "mean_only" was set.')
 
         if sample is None and extracted_mean is None:
+            # print(weights)
             mean, rho = self.extract_mean_and_rho(weights=weights)
         elif sample is None:
+            # print(weights)
+            # print(extracted_mean)
             assert len(extracted_mean) == len(extracted_rho) and \
                    len(extracted_mean) == len(self._mnet.param_shapes)
             # We should additionally assert that all shapes comply with
@@ -596,6 +605,9 @@ mnet_interface.MainNetInterface.hyper_shapes_learned`
                                           'yet implemented for this class. You either have to pass ' +
                                           'all weights or None.')
             else:
+                # print(weights)
+                # print(type(weights))
+                # print(len(weights))
                 assert len(weights) == len(self.param_shapes)
                 for i, s in enumerate(self.param_shapes):
                     assert np.all(np.equal(s, list(weights[i].shape)))
