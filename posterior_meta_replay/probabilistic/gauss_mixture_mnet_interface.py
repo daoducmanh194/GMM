@@ -546,6 +546,9 @@ class GaussianMixtureBNNWrapper(nn.Module, MainNetInterface):
             else:
                 # TODO might be good to also give the option to user of
                 # having a different weight sample per sample in minibatch
+                # print("Sample rho: {}".format(rho))
+                # print("shape: {}".format(type(rho)))
+                # print(len(rho))
                 sample = putils.sample_from_gumbel_softmax_trick(mean, rho, coef,
                                                              tau=1.0,
                                                              gauss_mixture=self._gauss_mixture,
@@ -555,6 +558,9 @@ class GaussianMixtureBNNWrapper(nn.Module, MainNetInterface):
                                                              logvar_enc=False,
                                                              generator=None,
                                                              is_radial=False)
+                # print("Sample: {}".format(sample))
+                # print(type(sample))
+                # print(len(sample))
 
             if isinstance(self._mnet, GaussianMLP):
                 assert disable_lrt
@@ -645,7 +651,8 @@ class GaussianMixtureBNNWrapper(nn.Module, MainNetInterface):
         # if self._apply_rho_offset:
         #     for gauss in range(self._gauss_mixture):
         #         rho = [r + self._rho_offset for r in rho[gauss]]
-
+        # print("Extracting")
+        # print(mean, rho, coef)
         return mean, rho, coef
 
     def get_output_weight_mask(self, out_inds=None, device=None):

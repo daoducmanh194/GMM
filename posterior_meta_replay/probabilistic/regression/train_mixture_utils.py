@@ -730,7 +730,7 @@ def compute_mse(task_id, data, mnet, hnet, device, config, shared, hhnet=None,
     T = data.output_to_torch_tensor(T, device)
 
     gauss_main = False
-    if isinstance(mnet, GaussianBNNWrapper):
+    if isinstance(mnet, GaussianMixtureBNNWrapper):
         assert hhnet is None
         gauss_main = True
 
@@ -752,23 +752,26 @@ def compute_mse(task_id, data, mnet, hnet, device, config, shared, hhnet=None,
 
     return_vals.w_mean = None
     return_vals.w_std = None
+    return_vals.w_coef = None
     return_vals.w_hnet = hnet_weights
     if gauss_main:
-        w_mean, w_rho = mnet.extract_mean_and_rho(weights=hnet_out)
+        w_mean, w_rho, w_coef = mnet.extract_mean_rho_coef(weights=hnet_out)
         w_std = putils.decode_diag_gauss(w_rho, logvar_enc=mnet.logvar_encoding)
 
         return_vals.w_mean = w_mean
         return_vals.w_std = w_std
+        return_vals.w_coef = w_coef
     elif deterministic_hnet:
         w_mean = hnet_out
 
         return_vals.w_mean = w_mean
         return_vals.w_std = None
+        return_vals.w_coef = None
 
     if return_samples:
         num_w = mnet.num_params
         if gauss_main:
-            num_w = num_w // 2
+            num_w = num_w // 3
         return_vals.samples = np.empty((config.val_sample_size, num_w))
 
     mse_vals = np.empty(config.val_sample_size)
@@ -786,7 +789,7 @@ def compute_mse(task_id, data, mnet, hnet, device, config, shared, hhnet=None,
         elif gauss_main:
             Y = mnet.forward(X, weights=None, mean_only=False,
                              extracted_mean=w_mean, extracted_rho=w_rho,
-                             disable_lrt=disable_lrt)
+                             extracted_coef=w_coef, disable_lrt=disable_lrt)
         elif deterministic_hnet:
             # FIXME Wasteful computation - same predictions every iteration
             Y = mnet.forward(X, weights=w_mean)

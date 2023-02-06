@@ -513,7 +513,8 @@ def sample_gauss(mean, rho, logvar_enc, coef, gauss_mixture, K,
         if logvar_enc:
             std = torch.exp(0.5 * rho[i])
         else:
-            std = F.softplus(rho[i])
+            print("The rho: {}".format(rho[i]))
+            std = F.softplus(torch.FloatTensor(rho[i]))
 
         if not is_bias:
             eps = torch.normal(0.0, 1., size=(K, gauss_mixture, d_in, d_out),

@@ -494,6 +494,7 @@ mnet_interface.MainNetInterface.hyper_shapes_learned`
         if sample is None and extracted_mean is None:
             # print(weights)
             mean, rho = self.extract_mean_and_rho(weights=weights)
+            # print("mean: ", mean)
         elif sample is None:
             # print(weights)
             # print(extracted_mean)
@@ -504,6 +505,8 @@ mnet_interface.MainNetInterface.hyper_shapes_learned`
 
             mean = extracted_mean
             rho = extracted_rho
+            # print(mean)
+            # print(rho)
 
         if isinstance(self._mnet, GaussianMLP) and not disable_lrt:
             if sample is not None:
@@ -529,9 +532,15 @@ mnet_interface.MainNetInterface.hyper_shapes_learned`
             else:
                 # TODO might be good to also give the option to the user of
                 # having a different weight sample per sample in the minibatch.
+                # print("Sample rho: {}".format(rho))
+                # print("shape: {}".format(type(rho)))
+                # print(len(rho))
                 sample = putils.decode_and_sample_diag_gauss(mean, rho,
                                                              logvar_enc=self._logvar_encoding, generator=rand_state,
                                                              is_radial=self._is_radial)
+                # print("Sample: {}".format(sample))
+                # print(type(sample))
+                # print(len(sample))
 
             if isinstance(self._mnet, GaussianMLP):
                 assert disable_lrt
@@ -617,7 +626,8 @@ mnet_interface.MainNetInterface.hyper_shapes_learned`
 
         if self._apply_rho_offset:
             rho = [r + self._rho_offset for r in rho]
-
+        # print("Extracting")
+        # print(mean, rho)
         return mean, rho
 
     def get_output_weight_mask(self, out_inds=None, device=None):

@@ -518,7 +518,7 @@ def train(task_id, data, mnet, hnet, device, config, shared, logger, writer):
     mnet.train()
     if hnet is not None:
         hnet.train()
-
+    
     # Not all output units have to be regularized for every task in a multi-
     # head setup.
     regged_outputs = None
@@ -538,7 +538,7 @@ def train(task_id, data, mnet, hnet, device, config, shared, logger, writer):
     # Whether the regularizer will be computed during training?
     calc_reg = hnet is not None and task_id > 0 and config.beta > 0 and \
                not config.train_from_scratch
-
+    
     # Regularizer targets.
     # Store distributions for each task before training on the current task.
     if calc_reg:
@@ -553,7 +553,7 @@ def train(task_id, data, mnet, hnet, device, config, shared, logger, writer):
     # What prior to use for BbB training?
     standard_prior = False
     if config.use_prev_post_as_prior and task_id > 0:
-        assert isinstance(mnet, GaussianBNNWrapper)
+        assert isinstance(mnet, GaussianMixtureBNNWrapper)
 
         if config.train_from_scratch:
             raise NotImplementedError()
@@ -608,14 +608,20 @@ def train(task_id, data, mnet, hnet, device, config, shared, logger, writer):
                         prior_std[ii][m] = tmp_std[m]
                         prior_coef[ii][m] = tmp_coef[m]
     else:
-        prior_mean = shared.prior_mean
-        prior_logvar = shared.prior_logvar
-        prior_std = shared.prior_std
-        prior_coef = shared.prior_coef
+        prior_mean = []
+        prior_logvar = []
+        prior_std = []
+        prior_coef = []
+        for gauss in range(3):
+            prior_mean.append(shared.prior_mean)
+            prior_logvar.append(shared.prior_logvar)
+            prior_std.append(shared.prior_std)
+            prior_coef.append(shared.prior_coef)
+        # print(prior_std)
         if config.prior_variance == 1:
             # Use standard Gaussian prior with 0 mean and unit variance.
             standard_prior = True
-
+    
     if hnet is None:
         params = mnet.parameters()
     else:
