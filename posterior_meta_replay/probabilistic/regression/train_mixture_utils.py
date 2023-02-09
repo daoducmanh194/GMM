@@ -292,10 +292,11 @@ def generate_gauss_networks(config, logger, data_handlers, device,
     orig_mnet = mnet
     if not non_gaussian:
         mnet = GaussianMixtureBNNWrapper(mnet,
-                                         no_mean_reinit=config.keep_orig_init,
-                                         logvar_encoding=config.use_logvar_enc,
-                                         apply_rho_offset=True,
-                                         is_radial=config.radial_bnn).to(device)
+                                        no_mean_reinit=config.keep_orig_init,
+                                        logvar_encoding=config.use_logvar_enc,
+                                        apply_rho_offset=True,
+                                        is_radial=config.radial_bnn,
+                                        gauss_mixture=3).to(device)
     else:
         logger.debug('Created main network will not be converted into a ' +
                      'Gaussian main network.')
@@ -756,7 +757,11 @@ def compute_mse(task_id, data, mnet, hnet, device, config, shared, hhnet=None,
     return_vals.w_hnet = hnet_weights
     if gauss_main:
         w_mean, w_rho, w_coef = mnet.extract_mean_rho_coef(weights=hnet_out)
-        w_std = putils.decode_diag_gauss(w_rho, logvar_enc=mnet.logvar_encoding)
+        w_std = []
+        for i in range(len(w_rho)):
+            # w_std = putils.decode_diag_gauss(w_rho, logvar_enc=mnet.logvar_encoding)
+            w_std.append(putils.decode_diag_gauss(w_rho[i],
+                                                 logvar_enc=mnet.logvar_encoding))
 
         return_vals.w_mean = w_mean
         return_vals.w_std = w_std

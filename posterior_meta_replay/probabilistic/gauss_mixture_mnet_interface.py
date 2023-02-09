@@ -126,7 +126,7 @@ class GaussianMixtureBNNWrapper(nn.Module, MainNetInterface):
         MainNetInterface.__init__(self)
 
         assert isinstance(mnet, MainNetInterface)
-        # assert isinstance(mnet, GaussianMixtureBNNWrapper)
+        assert not isinstance(mnet, GaussianMixtureBNNWrapper)
         assert (gauss_mixture, int)
 
         if is_radial:
@@ -220,10 +220,12 @@ class GaussianMixtureBNNWrapper(nn.Module, MainNetInterface):
                 dd['index'] += 2 * old_wlen
                 dd['dist_param'] = 'coef'
                 self._param_shapes_meta.append(dd)
+        # print(self._param_shapes_meta)
 
         if mnet._hyper_shapes_learned is not None:
             self._hyper_shapes_learned = mnet._hyper_shapes_learned + \
                                          mnet._hyper_shapes_learned + mnet._hyper_shapes_learned
+        
         if mnet._hyper_shapes_learned_ref is not None:
             self._hyper_shapes_learned_ref = \
                 list(mnet._hyper_shapes_learned_ref)
@@ -242,11 +244,12 @@ class GaussianMixtureBNNWrapper(nn.Module, MainNetInterface):
             warn('Class "GaussianMixtureBNNWrapper" doesn\'t modify the ' +
                  'existing attribute "hyper_shapes_distilled".')
 
-        self._mask_fc_out = mnet._mask_fc_out
+        self._mask_fc_out = False
         # print(self._mask_fc_out)
         self._has_linear_out = mnet._has_linear_out
         self._has_bias = mnet._has_bias
         self._has_fc_out = mnet._has_fc_out
+
         self._layer_weight_tensors = mnet._layer_weight_tensors
         self._layer_bias_vectors = mnet._layer_bias_vectors
         self._batchnorm_layers = mnet._batchnorm_layers
@@ -497,8 +500,9 @@ class GaussianMixtureBNNWrapper(nn.Module, MainNetInterface):
                 and extracted_coef is None) or \
                (extracted_mean is not None and extracted_rho is not None
                 and extracted_coef is not None)
+
         if sample is not None and mean_only:
-            assert ('Argument "mean_only" is ignored since "sample" is provided')
+            warn('Argument "mean_only" is ignored since "sample" is provided')
         if sample is not None and extracted_mean is not None:
             warn('Argument "extracted_mean" is ignored since "sample" is ' +
                  'provided.')
@@ -647,10 +651,14 @@ class GaussianMixtureBNNWrapper(nn.Module, MainNetInterface):
                 mean = weights[:(len(weights) // 3)]
                 rho = weights[(len(weights) // 3):(len(weights) * 2 // 3)]
                 coef = weights[(len(weights) * 2 // 3):]
-
-        # if self._apply_rho_offset:
-        #     for gauss in range(self._gauss_mixture):
-        #         rho = [r + self._rho_offset for r in rho[gauss]]
+        # print("RHO: ", rho[0])
+        # print(type(rho[0]))
+        if self._apply_rho_offset:
+            print("Here")
+            for i in range(len(rho)):
+                rho[i] = [r + self._rho_offset for r in rho[i]]
+                # for r in rho[i]:
+                #     r += self._rho_offset
         # print("Extracting")
         # print(mean, rho, coef)
         return mean, rho, coef

@@ -406,7 +406,7 @@ class GaussianBNNWrapper(nn.Module, MainNetInterface):
                 underlying ``mnet``.
             weights (list, optional): A list of parameters. The list must either
                 comply with the shapes in attribute :attr:`mnets.\
-mnet_interface.MainNetInterface.hyper_shapes_learned`
+                mnet_interface.MainNetInterface.hyper_shapes_learned`
                 or the shapes in attribute
                 :attr:`mnets.mnet_interface.MainNetInterface.param_shapes`.
 
@@ -624,6 +624,7 @@ mnet_interface.MainNetInterface.hyper_shapes_learned`
                 mean = weights[:(len(weights) // 2)]
                 rho = weights[(len(weights) // 2):]
 
+        # print("RHO: ", rho)
         if self._apply_rho_offset:
             rho = [r + self._rho_offset for r in rho]
         # print("Extracting")
