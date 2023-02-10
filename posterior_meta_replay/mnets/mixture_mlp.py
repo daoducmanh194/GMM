@@ -103,7 +103,7 @@ class MLP(nn.Module, MainNetInterface):
         distill_bn_stats (bool): If ``True``, then the shapes of the batchnorm
             statistics will be added to the attribute
             :attr:`mnets.mnet_interface.MainNetInterface.\
-hyper_shapes_distilled` and the current statistics will be returned by the
+            hyper_shapes_distilled` and the current statistics will be returned by the
             method :meth:`distillation_targets`.
 
             Note, this attribute may only be ``True`` if ``bn_track_stats``

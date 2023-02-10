@@ -762,7 +762,7 @@ def compute_mse(task_id, data, mnet, hnet, device, config, shared, hhnet=None,
             # w_std = putils.decode_diag_gauss(w_rho, logvar_enc=mnet.logvar_encoding)
             w_std.append(putils.decode_diag_gauss(w_rho[i],
                                                  logvar_enc=mnet.logvar_encoding))
-
+        
         return_vals.w_mean = w_mean
         return_vals.w_std = w_std
         return_vals.w_coef = w_coef

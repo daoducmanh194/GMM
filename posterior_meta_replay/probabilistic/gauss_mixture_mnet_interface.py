@@ -18,6 +18,7 @@ from warnings import warn
 from mnets.mnet_interface import MainNetInterface
 from probabilistic import prob_utils as putils
 from probabilistic.gauss_mlp import GaussianMLP
+from probabilistic.gauss_mixture_mlp import GaussianMixtureMLP
 
 
 class GaussianMixtureBNNWrapper(nn.Module, MainNetInterface):
@@ -529,7 +530,7 @@ class GaussianMixtureBNNWrapper(nn.Module, MainNetInterface):
             rho = extracted_rho
             coef = extracted_coef
 
-        if isinstance(self._mnet, GaussianMLP) and not disable_lrt:
+        if isinstance(self._mnet, GaussianMixtureMLP) and not disable_lrt:
             if sample is not None:
                 raise ValueError('Local reparametrization trick is used. ' +
                                  'Hence, activations are samples and a ' +
@@ -564,12 +565,12 @@ class GaussianMixtureBNNWrapper(nn.Module, MainNetInterface):
                                                              logvar_enc=False,
                                                              generator=None,
                                                              is_radial=False))
-                sample = sum(sample) / len(sample)
+                sample = list(map(lambda *x: sum(x) / len(sample), *sample))
                 # print("Sample: {}".format(sample))
                 # print(type(sample))
                 # print(len(sample))
 
-            if isinstance(self._mnet, GaussianMLP):
+            if isinstance(self._mnet, GaussianMixtureMLP):
                 assert disable_lrt
                 y = self._mnet.forward(x, None, None, sample=sample, **kwargs)
             else:
@@ -732,7 +733,9 @@ class GaussianMixtureBNNWrapper(nn.Module, MainNetInterface):
         if mean_only:
             sample = mean
         else:
-            sample = putils.sample_from_gumbel_softmax_trick(mean, rho, coef,
+            sample = []
+            for gauss in range(self._gauss_mixture):
+                sample.append(putils.sample_from_gumbel_softmax_trick(mean[gauss], rho[gauss], coef[gauss],
                                                              tau=1.0,
                                                              gauss_mixture=self._gauss_mixture,
                                                              K=1,
@@ -740,7 +743,8 @@ class GaussianMixtureBNNWrapper(nn.Module, MainNetInterface):
                                                              is_bias=True,
                                                              logvar_enc=False,
                                                              generator=None,
-                                                             is_radial=False)
+                                                             is_radial=False))
+            sample = list(map(lambda *x: sum(x) / len(sample), *sample))
 
         return sample
 
