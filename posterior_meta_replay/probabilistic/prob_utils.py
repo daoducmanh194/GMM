@@ -513,8 +513,8 @@ def sample_gauss(mean, rho, logvar_enc, coef, gauss_mixture, K,
         if logvar_enc:
             std = torch.exp(0.5 * rho[i])
         else:
-            print("The rho: {}".format(rho[i]))
-            std = F.softplus(torch.FloatTensor(rho[i]))
+            # print("The rho: {}".format(rho[i]))
+            std = F.softplus(rho[i])
 
         if not is_bias:
             eps = torch.normal(0.0, 1., size=(K, gauss_mixture, d_in, d_out),
@@ -524,7 +524,7 @@ def sample_gauss(mean, rho, logvar_enc, coef, gauss_mixture, K,
                                generator=generator)
             mean = [torch.unsqueeze(t, 0) for t in mean]
             std = [torch.unsqueeze(t, 0) for t in std]
-        mean = torch.tile(torch.unsqueeze(mean, 0), [K, 1, 1, 1])
+        mean = torch.tile(torch.unsqueeze(mean[i], 0), [K, 1, 1, 1])
         std = torch.tile(torch.unsqueeze(std, 0), [K, 1, 1, 1])
 
         if not is_radial:

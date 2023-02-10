@@ -521,9 +521,9 @@ class GaussianMixtureBNNWrapper(nn.Module, MainNetInterface):
             # print(weights)
             mean, rho, coef = self.extract_mean_rho_coef(weights=weights)
         elif sample is None:
-            assert len(extracted_rho) == len(extracted_mean) and \
-                   len(extracted_mean) == len(extracted_rho) and \
-                   len(extracted_mean) == len(self._mnet.param_shapes)
+            # assert len(extracted_mean) == len(extracted_rho) and\
+            #        len(extracted_mean) == len(extracted_coef) and\
+            #        len(extracted_mean) == len(self._mnet.param_shapes)
 
             mean = extracted_mean
             rho = extracted_rho
@@ -553,7 +553,9 @@ class GaussianMixtureBNNWrapper(nn.Module, MainNetInterface):
                 # print("Sample rho: {}".format(rho))
                 # print("shape: {}".format(type(rho)))
                 # print(len(rho))
-                sample = putils.sample_from_gumbel_softmax_trick(mean, rho, coef,
+                sample = []
+                for gauss in range(self._gauss_mixture):
+                    sample.append(putils.sample_from_gumbel_softmax_trick(mean[gauss], rho[gauss], coef[gauss],
                                                              tau=1.0,
                                                              gauss_mixture=self._gauss_mixture,
                                                              K=1,
@@ -561,7 +563,8 @@ class GaussianMixtureBNNWrapper(nn.Module, MainNetInterface):
                                                              is_bias=True,
                                                              logvar_enc=False,
                                                              generator=None,
-                                                             is_radial=False)
+                                                             is_radial=False))
+                sample = sum(sample) / len(sample)
                 # print("Sample: {}".format(sample))
                 # print(type(sample))
                 # print(len(sample))
@@ -654,7 +657,7 @@ class GaussianMixtureBNNWrapper(nn.Module, MainNetInterface):
         # print("RHO: ", rho[0])
         # print(type(rho[0]))
         if self._apply_rho_offset:
-            print("Here")
+            # print("Here")
             for i in range(len(rho)):
                 rho[i] = [r + self._rho_offset for r in rho[i]]
                 # for r in rho[i]:
