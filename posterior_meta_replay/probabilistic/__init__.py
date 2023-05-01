@@ -1,2 +1,4 @@
 from .gauss_mnet_interface import GaussianBNNWrapper
 from .gauss_mlp import GaussianMLP
+from .gauss_mixture_mnet_interface import GaussianMixtureBNNWrapper
+from .gauss_mixture_mlp import GaussianMixtureMLP
