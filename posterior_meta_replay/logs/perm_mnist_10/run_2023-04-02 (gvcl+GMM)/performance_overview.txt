@@ -1,0 +1,19 @@
+acc_avg_final 89.140000
+acc_avg_during 94.448000
+acc_task_given 82.67 89.41 94.35 91.61 93.36 91.97 94.48 96.23 98.48 98.95
+acc_task_given_during 95.78 95.84 96.34 96.32 96.21 96.35 96.35 96.27 96.41 96.61
+acc_avg_task_given 93.151000
+acc_avg_task_given_during 96.276000
+acc_task_inferred_ent 57.0 80.82 90.27 90.19 93.18 93.49 95.81 95.16 97.27 98.34
+acc_task_inferred_ent_during 94.43 94.01 94.38 93.51 94.56 94.82 94.66 94.81 94.52 94.78
+acc_avg_task_inferred_ent 89.140000
+acc_avg_task_inferred_ent_during 94.448000
+avg_task_inference_acc_ent 90.453000
+acc_avg_task_inferred_conf 85.679000
+avg_task_inference_acc_conf 90.044000
+acc_avg_task_inferred_agree 83.382000
+avg_task_inference_acc_agree 86.584000
+num_weights_main 12756600
+num_weights_hyper -1
+num_weights_hm_ratio -1
+finished 1

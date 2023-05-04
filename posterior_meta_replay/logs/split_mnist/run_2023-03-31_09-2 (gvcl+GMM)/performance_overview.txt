@@ -1,0 +1,19 @@
+acc_avg_final 70.897031
+acc_avg_during 71.816886
+acc_task_given 99.95241134751773 99.36841332027424 99.73820704375667 99.48827794561933 99.42170953101362
+acc_task_given_during 99.95271867612293 99.36507345739472 99.7385485592316 99.48942598187311 99.42170953101362
+acc_avg_task_given 99.661804
+acc_avg_task_given_during 99.663495
+acc_task_inferred_ent 99.95252955082742 75.465876591576886 69.91156883671291 57.87185297079557 51.253328290468986
+acc_task_inferred_ent_during 99.95271867612293 73.05974534769833 73.65635005336179 58.6122860020141 49.803328290468986
+acc_avg_task_inferred_ent 70.897031
+acc_avg_task_inferred_ent_during 71.816886
+avg_task_inference_acc_ent 71.685553
+acc_avg_task_inferred_conf 66.577031
+avg_task_inference_acc_conf 66.745553
+acc_avg_task_inferred_agree 70.896789
+avg_task_inference_acc_agree 71.128717
+num_weights_main 537660
+num_weights_hyper -1
+num_weights_hm_ratio -1
+finished 1

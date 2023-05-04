@@ -1,0 +1,4 @@
+#!/bin/sh
+# The user invoked CLI call that caused the creation of
+# this output folder.
+python3 train_perm_bbb.py --momentum=-1 --chmlp_chunk_size=55000 --beta=1000.0 --cl_scenario=3 --split_head_cl3 --num_tasks=100 --regularizer=rkl --batch_size=128 --n_iter=5000 --lr=0.0001 --use_adam --clip_grad_norm=100.0 --train_sample_size=10 --prior_variance=1.0 --kl_scale=0.01 --calc_hnet_reg_targets_online --hnet_reg_batch_size=8 --mlp_arch=1000,1000 --net_act=relu --hnet_type=chunked_hmlp --hmlp_arch=100,100 --cond_emb_size=32 --chunk_emb_size=32 --hnet_net_act=sigmoid --std_normal_temb=1.0 --std_normal_emb=1.0 --keep_orig_init --full_test_interval=25 --store_final_model --padding=2
