@@ -3807,7 +3807,7 @@
 04/13/2023 11:53:42 AM - INFO - train_vi_mixture - ### Testing all trained tasks ... Done ###
 04/13/2023 11:53:42 AM - INFO - train_bbb_mixture - During accuracies (task identity given): [87.6,83.7,83.2,84.5,83.1,85.7,85.2,81.9,84.6,89.4] (avg: 84.91%).
 04/13/2023 11:53:42 AM - INFO - train_bbb_mixture - Final accuracies (task identity given): [97.5,91.9,90.3,92.8,89.3,94.8,94.5,87.4,94.2,98.1] (avg: 93.21%).
-04/13/2023 11:53:42 AM - INFO - train_bbb_mixture - During accuracies (task identity inferred): [69.2,43.7,57.2,52.3,52.7,52.2,51.3,49.2,54.2,51.8] (avg: 53.44%).
+04/13/2023 11:53:42 AM - INFO - train_bbb_mixture - During accuracies (task identity inferred): [88.5,67.7,63.3,58.1,55.4,53.6,48.5,43.8,45.6,42.4] (avg: 56.38%).
 04/13/2023 11:53:42 AM - INFO - train_bbb_mixture - Final accuracies (task identity inferred): [56.9,32.5,44.3,40.2,41.5,39.4,38.6,38.0,41.6,39.3] (avg: 41.32%).
 04/13/2023 11:53:42 AM - INFO - train_bbb_mixture - ### Avg. during accuracy (CL scenario 3): 53.4400.
 04/13/2023 11:53:42 AM - INFO - train_bbb_mixture - ### Avg. final accuracy (CL scenario 3): 41.3200.

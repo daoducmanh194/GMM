@@ -3805,9 +3805,9 @@
 04/27/2023 11:53:42 AM - INFO - train_vi - Test: Avg. accuracy when using inferred embeddings (agreement): 42.27 (std: 0.62).
 04/27/2023 11:53:42 AM - INFO - train_vi - Test: CL3 accuracy: 42.36% (no. of tasks: 10).
 04/27/2023 11:53:42 AM - INFO - train_vi - ### Testing all trained tasks ... Done ###
-04/27/2023 11:53:42 AM - INFO - train_bbb - During accuracies (task identity given): [98.8,91.9,91.3,94.1,90.7,98.1,97.5,90.3,94.8,99.8] (avg: 94.89%).
+04/27/2023 11:53:42 AM - INFO - train_bbb - During accuracies (task identity given): [88.6,84.7,83.3,84.5,83.1,85.7,85.2,81.9,84.7,89.4] (avg: 85.57%).
 04/27/2023 11:53:42 AM - INFO - train_bbb - Final accuracies (task identity given): [98.8,91.9,91.3,94.1,90.8,98.1,97.5,90.3,94.8,99.7] (avg: 94.87%).
-04/27/2023 11:53:42 AM - INFO - train_bbb - During accuracies (task identity inferred): [87.6,61.8,61.1,57.2,53.2,51.2,47.6,40.9,43.7,40.5] (avg: 54.48%).
+04/27/2023 11:53:42 AM - INFO - train_bbb - During accuracies (task identity inferred): [88.6,62.8,62.1,58.2,54.2,52.2,48.6,41.9,44.7,41.5] (avg: 56.48%).
 04/27/2023 11:53:42 AM - INFO - train_bbb - Final accuracies (task identity inferred): [58. ,33.6,45.4,41.2,42.4,40.9,40.1,39. ,42.5,40.5] (avg: 42.36%).
 04/27/2023 11:53:42 AM - INFO - train_bbb - ### Avg. during accuracy (CL scenario 3): 54.4800.
 04/27/2023 11:53:42 AM - INFO - train_bbb - ### Avg. final accuracy (CL scenario 3): 42.3600.
